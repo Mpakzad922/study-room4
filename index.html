@@ -244,8 +244,10 @@
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
             <button onclick="window.location.href='azmoon.html'" style="background: #8e44ad; color: white; border: none; padding: 15px; border-radius: 15px; font-family: inherit; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 10px rgba(142, 68, 173, 0.3);">📝 آزمون آنلاین</button>
-            <button onclick="window.location.href='homework.html'" style="background: #e67e22; color: white; border: none; padding: 15px; border-radius: 15px; font-family: inherit; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 10px rgba(230, 126, 34, 0.3);">📝 دفتر مشق</button>
+            <button onclick="alert('🛍️ فروشگاه به زودی باز می‌شود!\nامتیاز و الماس جمع کنید.')" style="background: #f1c40f; color: #333; border: none; padding: 15px; border-radius: 15px; font-family: inherit; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 10px rgba(241, 196, 15, 0.3); font-weight:bold;">🛒 فروشگاه جوایز</button>
         </div>
+        
+        <button onclick="window.location.href='homework.html'" style="width:100%; background: #e67e22; color: white; border: none; padding: 15px; border-radius: 15px; font-family: inherit; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 10px rgba(230, 126, 34, 0.3); margin-bottom: 10px;">📝 دفتر مشق و تکالیف</button>
         
         <button onclick="openHistory()" style="width:100%; background: white; color: #2c3e50; border: 2px solid #ecf0f1; padding: 12px; border-radius: 15px; font-family: inherit; font-size: 1rem; cursor: pointer; margin-bottom: 20px; display:flex; align-items:center; justify-content:center; gap:10px;">
             📜 پرونده و سوابق من
@@ -344,7 +346,6 @@
             const savedUser = localStorage.getItem(DB_KEY + 'creds');
             
             if(savedUser) {
-                // لود آنی از حافظه
                 try {
                     const userData = JSON.parse(savedUser);
                     currentUser = userData;
@@ -355,7 +356,6 @@
                     }
                 } catch(e) {}
                 
-                // درخواست بروزرسانی به سرور
                 try {
                     const creds = JSON.parse(savedUser);
                     if(typeof SyncManager !== 'undefined') SyncManager.init(creds.username, creds.password);
@@ -447,7 +447,7 @@
                 const res = await fetch(`${API_URL}?t=${Date.now()}`, { method: 'POST', headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'get_lessons' }) });
                 const result = await res.json();
                 if(result.status === 'success') {
-                    playlist = result.data; // ترتیب سرور را حفظ می‌کنیم (بدون reverse)
+                    playlist = result.data; 
                     renderList();
                 } 
             } catch (err) { 
@@ -739,7 +739,6 @@
             SyncManager.addToQueue('claim_reward', { reward_type: 'lesson', reward_id: activeVid.id });
 
             setTimeout(() => {
-                // صدا زدن تابع جشن از فایل rank.js
                 if(typeof launchConfetti === 'function') launchConfetti();
             }, 300);
         }
