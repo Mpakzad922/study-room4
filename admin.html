@@ -304,8 +304,11 @@
     
     // متغیرهای ضبط صدا و تصویر معلم
     let CURRENT_HW_ID = null;
-    let MEDIA_RECORDER = null, AUDIO_CHUNKS = [], TEACHER_VOICE_BLOB = null;
-    let TEACHER_IMG_FILE = null, SELECTED_GRADE = '';
+    let MEDIA_RECORDER = null;
+    let AUDIO_CHUNKS = []; 
+    let TEACHER_VOICE_BLOB = null;
+    let TEACHER_IMG_FILE = null;
+    let SELECTED_GRADE = '';
 
     function doLogin() {
         const pass = document.getElementById('adminPass').value.trim();
@@ -370,7 +373,6 @@
             
             const div = document.createElement('div');
             div.className = 'folder-card';
-            // کلیک روی متن پوشه -> باز کردن لیست
             div.innerHTML = `
                 <div style="flex:1;" onclick="openFolder('${hw.id}')">
                     <strong>📁 ${hw.title}</strong>
@@ -388,7 +390,6 @@
         });
     }
 
-    // باز کردن مودال ساخت/ویرایش تکلیف
     function openHomeworkModal(hwId = null) {
         const modal = document.getElementById('hwModal');
         const titleInp = document.getElementById('hwTitleInput');
@@ -397,7 +398,6 @@
         const idInp = document.getElementById('editHwId');
 
         if(hwId) {
-            // حالت ویرایش
             const hw = ALL_HOMEWORKS.find(h => String(h.id) === String(hwId));
             if(!hw) return;
             idInp.value = hwId;
@@ -405,11 +405,7 @@
             descInp.value = hw.desc || '';
             scoreInp.value = hw.score || 20;
         } else {
-            // حالت جدید
-            idInp.value = '';
-            titleInp.value = '';
-            descInp.value = '';
-            scoreInp.value = 20;
+            idInp.value = ''; titleInp.value = ''; descInp.value = ''; scoreInp.value = 20;
         }
         modal.style.display = 'flex';
     }
@@ -427,12 +423,8 @@
             const res = await fetch(API_URL, {
                 method: 'POST', headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    action: 'save_homework',
-                    admin_token: ADMIN_TOKEN,
-                    hw_id: hwId || null, // اگر نال باشد یعنی جدید
-                    title: title,
-                    hw_desc: desc,
-                    quality_score: score
+                    action: 'save_homework', admin_token: ADMIN_TOKEN, hw_id: hwId || null,
+                    title: title, hw_desc: desc, quality_score: score
                 })
             });
             const d = await res.json();
@@ -453,10 +445,7 @@
                 method: 'POST', headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action: 'delete_homework', admin_token: ADMIN_TOKEN, hw_id: hwId })
             });
-            if((await res.json()).status === 'success') {
-                alert("✅ حذف شد.");
-                fetchData();
-            } else alert("خطا در حذف.");
+            if((await res.json()).status === 'success') { alert("✅ حذف شد."); fetchData(); } else alert("خطا در حذف.");
         } catch(e) { alert("خطای شبکه"); }
         document.getElementById('loadingBox').style.display = 'none';
     }
@@ -467,7 +456,6 @@
     }
 
     function openFolder(hwIdStr) {
-        // پیدا کردن آبجکت تکلیف از آرایه
         const hw = ALL_HOMEWORKS.find(h => String(h.id) === String(hwIdStr));
         if(!hw) return;
 
@@ -485,8 +473,7 @@
         missingContainer.innerHTML = '<b style="color:#c0392b">❌ انجام نداده‌ها (هنوز ارسال نکرده‌اند):</b><br>';
 
         const submittedUsers = [];
-        let hasPending = false;
-        let hasGraded = false;
+        let hasPending = false; let hasGraded = false;
 
         if(hw.submissions) {
             const sortedUsers = Object.keys(hw.submissions);
@@ -495,38 +482,25 @@
                 const sub = hw.submissions[u];
                 const user = ALL_USERS.find(usr => usr.u === u);
                 const name = user ? user.n : u;
-                
                 const card = createSubCard(u, name, sub);
-                if(sub.status === 'pending') {
-                    pendingContainer.appendChild(card);
-                    hasPending = true;
-                } else {
-                    gradedContainer.appendChild(card);
-                    hasGraded = true;
-                }
+                if(sub.status === 'pending') { pendingContainer.appendChild(card); hasPending = true; } 
+                else { gradedContainer.appendChild(card); hasGraded = true; }
             });
         }
 
         if(!hasPending) pendingContainer.innerHTML += '<p style="color:#999; text-align:center; padding:10px;">موردی نیست.</p>';
         if(!hasGraded) gradedContainer.innerHTML += '<p style="color:#999; text-align:center; padding:10px;">موردی نیست.</p>';
 
-        // لیست غایبین (همه کاربران منهای کسانی که ارسال کرده‌اند)
         const missing = ALL_USERS.filter(u => !submittedUsers.includes(u.u));
         if(missing.length > 0) {
-            let html = "";
-            missing.forEach(u => {
-                html += `<span class="missing-item">${u.n}</span>`;
-            });
+            let html = ""; missing.forEach(u => { html += `<span class="missing-item">${u.n}</span>`; });
             missingContainer.innerHTML += html;
-        } else {
-            missingContainer.innerHTML += '<span style="color:green; font-weight:bold;">همه انجام داده‌اند! 👏</span>';
-        }
+        } else { missingContainer.innerHTML += '<span style="color:green; font-weight:bold;">همه انجام داده‌اند! 👏</span>'; }
     }
 
     function createSubCard(username, name, sub) {
-        // دریافت لینک سالم (اگر لینک کامل است خودش را استفاده کن، اگر نسبی است آدرس سرور را اضافه کن)
         const fullUrl = sub.file.startsWith('http') ? sub.file : API_URL + sub.file;
-        let mediaHtml = sub.type === 'voice' ? `<audio controls src="${fullUrl}" style="width:100%;margin-top:10px;"></audio>` : `<a href="${fullUrl}" target="_blank"><img src="${fullUrl}" style="height:100px; border-radius:8px; display:block; margin:5px auto;"></a>`;
+        let mediaHtml = sub.type === 'voice' ? `<audio controls src="${fullUrl}" style="width:100%;margin-top:10px;"></audio><a href="${fullUrl}" target="_blank" style="display:block;text-align:right;font-size:0.8rem;color:#3498db;margin-top:5px;text-decoration:none;">📥 دانلود فایل</a>` : `<a href="${fullUrl}" target="_blank"><img src="${fullUrl}" style="height:100px; border-radius:8px; display:block; margin:5px auto;"></a>`;
         
         const div = document.createElement('div');
         div.className = `sub-card ${sub.status}`;
@@ -573,13 +547,25 @@
         document.getElementById(`xp_${username}`).value = xpVal;
     }
 
-    // --- توابع ضبط صدا و عکس معلم ---
+    // --- 🎙️ ضبط صدا (موتور جدید) ---
     async function startRec(u) {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             MEDIA_RECORDER = new MediaRecorder(stream);
-            AUDIO_CHUNKS = [];
-            MEDIA_RECORDER.ondataavailable = e => AUDIO_CHUNKS.push(e.data);
+            AUDIO_CHUNKS = []; // ریست کردن آرایه
+            
+            MEDIA_RECORDER.ondataavailable = event => {
+                if (event.data.size > 0) {
+                    AUDIO_CHUNKS.push(event.data);
+                }
+            };
+            
+            MEDIA_RECORDER.onstop = () => {
+                TEACHER_VOICE_BLOB = new Blob(AUDIO_CHUNKS, { type: 'audio/webm' });
+                document.getElementById(`recStatus_${u}`).innerText = "✅ صدا آماده ارسال";
+                document.getElementById(`recStatus_${u}`).style.color = "green";
+            };
+
             MEDIA_RECORDER.start();
             document.getElementById(`rec_${u}`).classList.add('recording');
             document.getElementById(`recStatus_${u}`).innerText = "🎤 در حال ضبط...";
@@ -588,14 +574,9 @@
     }
 
     function stopRec(u) {
-        if(MEDIA_RECORDER) {
+        if(MEDIA_RECORDER && MEDIA_RECORDER.state !== 'inactive') {
             MEDIA_RECORDER.stop();
             document.getElementById(`rec_${u}`).classList.remove('recording');
-            MEDIA_RECORDER.onstop = () => {
-                TEACHER_VOICE_BLOB = new Blob(AUDIO_CHUNKS, { type: 'audio/webm' });
-                document.getElementById(`recStatus_${u}`).innerText = "✅ صدا ضبط شد";
-                document.getElementById(`recStatus_${u}`).style.color = "green";
-            };
         }
     }
 
@@ -607,17 +588,15 @@
         }
     }
 
-    // 🚀 تابع جدید آپلود (جایگزین قبلی)
+    // --- 🚀 آپلود فایل (استاندارد FormData) ---
     async function uploadFileFormData(fileBlob, fileType, username) {
         const formData = new FormData();
         const timestamp = Date.now();
         
         if (fileBlob instanceof Blob) {
-            // نام‌گذاری تمیز و یونیک برای جلوگیری از تداخل
             const ext = fileType === 'voice' ? 'webm' : 'jpg';
-            // حذف کاراکترهای عجیب از نام کاربری
             const safeUser = username ? username.replace(/[^a-z0-9]/gi, '_') : 'user';
-            const filename = `${fileType}_${safeUser}_${timestamp}.${ext}`;
+            const filename = `teacher_${fileType}_${safeUser}_${timestamp}.${ext}`;
             formData.append('file', fileBlob, filename);
         } else {
             formData.append('file', fileBlob);
@@ -633,7 +612,6 @@
         throw new Error(data.message || 'آپلود انجام نشد');
     }
 
-    // 🚀 تابع جدید ثبت نمره (جایگزین قبلی)
     async function submitGrade(username) {
         if(!SELECTED_GRADE) return alert("لطفاً اول نمره کیفی (دکمه‌های رنگی) را انتخاب کنید.");
         
@@ -643,14 +621,13 @@
         document.getElementById('loadingBox').style.display = 'flex';
 
         try {
-            // 1. آپلود ویس
+            // 1. آپلود ویس (اگر موجود باشد)
             let voiceUrl = '';
             if(TEACHER_VOICE_BLOB) {
-                // نام کاربری را هم می‌فرستیم تا اسم فایل قشنگ شود
                 voiceUrl = await uploadFileFormData(TEACHER_VOICE_BLOB, 'voice', username);
             }
 
-            // 2. آپلود عکس
+            // 2. آپلود عکس (اگر موجود باشد)
             let imgUrl = '';
             if(TEACHER_IMG_FILE) {
                 imgUrl = await uploadFileFormData(TEACHER_IMG_FILE, 'image', username);
@@ -673,8 +650,11 @@
             });
 
             if((await res.json()).status === 'success') {
-                alert("✅ نمره و بازخورد با موفقیت ثبت شد.");
-                TEACHER_VOICE_BLOB = null; TEACHER_IMG_FILE = null; SELECTED_GRADE = '';
+                alert("✅ نمره و بازخورد ثبت شد.");
+                TEACHER_VOICE_BLOB = null; 
+                TEACHER_IMG_FILE = null; 
+                SELECTED_GRADE = '';
+                AUDIO_CHUNKS = []; 
                 fetchData(); 
             } else { alert("خطا در ثبت."); }
 
@@ -686,7 +666,7 @@
         document.getElementById('loadingBox').style.display = 'none';
     }
 
-    // --- سایر توابع اصلی (بدون تغییر) ---
+    // --- بقیه توابع نمایش (بدون تغییر) ---
     function renderUsersList(users) {
         const container = document.getElementById('usersList');
         container.innerHTML = '';
@@ -903,4 +883,3 @@
 </script>
 </body>
 </html>
-
