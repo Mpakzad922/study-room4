@@ -233,20 +233,44 @@
                 subArea.style.display = 'none';
                 fbContainer.style.display = 'block';
                 
+                // --- بخش نمایش فایل ارسالی دانش‌آموز + لینک دانلود ---
                 myWorkContainer.style.display = 'block';
                 const myContent = document.getElementById('myWorkContent');
                 let myFileUrl = getSafeUrl(hw.my_status.file);
-                if(hw.my_status.type === 'voice') myContent.innerHTML = `<audio controls src="${myFileUrl}" class="audio-player"></audio>`;
+                
+                if(hw.my_status.type === 'voice') {
+                    myContent.innerHTML = `
+                        <div style="background:white; padding:10px; border-radius:10px; border:1px solid #eee;">
+                            <audio controls src="${myFileUrl}" class="audio-player" preload="metadata"></audio>
+                            <a href="${myFileUrl}" target="_blank" style="display:block; text-align:center; margin-top:5px; font-size:0.8rem; color:#3498db; text-decoration:none;">📥 دانلود فایل من</a>
+                        </div>`;
+                }
                 else myContent.innerHTML = `<img src="${myFileUrl}" class="thumb-img" onclick="openLightbox(this.src)">`;
 
                 document.getElementById('fGrade').innerText = hw.my_status.grade;
                 document.getElementById('fText').innerText = hw.my_status.feedback || "بدون پیام.";
                 
+                // --- بخش نمایش ویس معلم + لینک دانلود (اصلاح شده) ---
                 if(hw.my_status.teacher_voice) {
                     document.getElementById('fVoiceBox').style.display = 'block';
                     const audioEl = document.getElementById('fAudio');
-                    audioEl.src = getSafeUrl(hw.my_status.teacher_voice);
+                    const tVoiceUrl = getSafeUrl(hw.my_status.teacher_voice);
+                    
+                    audioEl.src = tVoiceUrl;
                     audioEl.load();
+
+                    // اضافه کردن دکمه دانلود اگر قبلا ساخته نشده
+                    let dlBtn = document.getElementById('tVoiceDownload');
+                    if(!dlBtn) {
+                        dlBtn = document.createElement('a');
+                        dlBtn.id = 'tVoiceDownload';
+                        dlBtn.target = '_blank';
+                        dlBtn.style = "display:block; text-align:right; margin-top:8px; font-size:0.85rem; color:#27ae60; text-decoration:none; font-weight:bold;";
+                        dlBtn.innerText = "📥 دانلود ویس معلم (اگر پخش نشد)";
+                        document.getElementById('fVoiceBox').appendChild(dlBtn);
+                    }
+                    dlBtn.href = tVoiceUrl;
+
                 } else document.getElementById('fVoiceBox').style.display = 'none';
 
                 if(hw.my_status.teacher_image) {
@@ -407,3 +431,4 @@
     </script>
 </body>
 </html>
+
