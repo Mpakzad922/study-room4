@@ -3,11 +3,12 @@
 
 const APP_CONFIG = {
     // 🔴 آدرس سرور (بدون اسلش در انتها)
-    API_URL: "https://chamran-api.liara.run",
+    API_URL: "https://chamran-api2.liara.run",
     
     // عنوان سایت
     SITE_TITLE: "مدرسه هوشمند چمران",
     
     // نسخه برنامه
     VERSION: "2.0.0 (Diamond Update)"
+
 };
