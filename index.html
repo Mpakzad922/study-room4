@@ -1,0 +1,765 @@
+!DOCTYPE html
+html lang=fa dir=rtl
+head
+    meta charset=UTF-8
+    meta name=viewport content=width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no
+    titleمیز مطالعه هوشمند چمران (نسخه نهایی 💎)title
+    
+    link href=httpscdn.jsdelivr.netghrastikerdarvazirmatn@v33.003Vazirmatn-font-face.css rel=stylesheet 
+    link href=httpsfonts.googleapis.comcss2family=Cinzel+Decorativewght@700&family=Montserratwght@400;600&display=swap rel=stylesheet
+
+    style
+        root { --primary #2c3e50; --accent #e67e22; --bg #ecf0f1; --success #27ae60; --danger #c0392b; --gold linear-gradient(45deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c); --gem #9b59b6; }
+        body { font-family 'Vazirmatn', sans-serif; background var(--bg); margin 0; display flex; flex-direction column; align-items center; min-height 100vh; padding 10px; box-sizing border-box; -webkit-tap-highlight-color transparent; overflow-x hidden; user-select none; }
+        
+         --- استایل‌های اصلی --- 
+        .card { background white; width 100%; max-width 500px; padding 25px 20px; border-radius 20px; box-shadow 0 8px 20px rgba(0,0,0,0.05); margin-top 15px; text-align center; display none; opacity 0; transition opacity 0.5s ease-in-out; }
+        .card.show-content { opacity 1; }
+        .active { display block; }
+
+        .user-panel { background #2c3e50; color white; padding 15px; border-radius 15px; margin-bottom 20px; display flex; justify-content space-between; align-items center; box-shadow 0 5px 15px rgba(44, 62, 80, 0.3); position relative; overflow hidden; }
+        .user-panelafter { content ''; position absolute; top -50%; left -50%; width 200%; height 200%; background linear-gradient(45deg, transparent, rgba(255,255,255,0.05), transparent); animation shinePanel 5s infinite; }
+        @keyframes shinePanel { 0% {transform translateX(-100%);} 100% {transform translateX(100%);} }
+        .rank-badge { background rgba(255,255,255,0.2); padding 3px 10px; border-radius 8px; font-size 0.75rem; margin-top 5px; display inline-block; }
+
+        .top-icons { display flex; gap 10px; align-items center; }
+        .icon-btn { position relative; cursor pointer; font-size 1.4rem; transition 0.3s; }
+        .icon-btnhover { transform scale(1.1); }
+        .notif-dot { position absolute; top 0; right 0; width 10px; height 10px; background red; border-radius 50%; border 2px solid #2c3e50; display none; animation pulseRed 1s infinite; }
+        @keyframes pulseRed { 0% {box-shadow 0 0 0 0 rgba(255, 0, 0, 0.7);} 70% {box-shadow 0 0 0 5px rgba(255, 0, 0, 0);} 100% {box-shadow 0 0 0 0 rgba(255, 0, 0, 0);} }
+        
+        .gem-box { display flex; align-items center; gap 5px; background rgba(155, 89, 182, 0.3); padding 5px 10px; border-radius 20px; font-size 0.9rem; font-weight bold; border 1px solid rgba(155, 89, 182, 0.5); }
+
+         --- دیوار افتخار --- 
+        .wall-of-fame { 
+            background linear-gradient(to right, #2c3e50, #34495e); 
+            padding 15px; 
+            border-radius 15px; 
+            margin-bottom 20px; 
+            box-shadow 0 8px 20px rgba(0,0,0,0.2);
+            text-align right;
+            border 2px solid #f1c40f; 
+            position relative;
+            overflow hidden; 
+        }
+        
+        .wall-particles {
+            position absolute;
+            top 0; left 0; width 100%; height 100%;
+            pointer-events none; z-index 1; opacity 0.6;
+        }
+        @keyframes subtleFall { from { background-position 0 0; } to { background-position 0 600px; } }
+        .p1 { background-image radial-gradient(rgba(241, 196, 15, 0.8) 1px, transparent 1px); background-size 25px 25px; animation subtleFall 25s linear infinite; }
+        .p2 { background-image radial-gradient(rgba(255, 255, 255, 0.6) 1.5px, transparent 1.5px); background-size 50px 50px; background-position 25px 10px; animation subtleFall 18s linear infinite; }
+        .p3 { background-image radial-gradient(rgba(255, 255, 255, 0.9) 1px, transparent 1px); background-size 80px 80px; background-position -10px -20px; animation subtleFall 12s linear infinite; opacity 0.4; }
+
+        .wall-header { display flex; justify-content space-between; align-items center; margin-bottom 15px; color #f1c40f; position relative; z-index 2; }
+        .wall-title { font-family 'Cinzel Decorative', cursive; font-weight bold; font-size 1.1rem; display flex; align-items center; gap 5px; }
+        
+        .wall-scroll { display flex; gap 12px; overflow-x auto; padding-bottom 5px; scrollbar-width none; -webkit-overflow-scrolling touch; position relative; z-index 2; }
+        .wall-scroll-webkit-scrollbar { display none; }
+
+        .champion-card { background rgba(255, 255, 255, 0.95); min-width 110px; padding 12px 5px; border-radius 12px; text-align center; box-shadow 0 4px 10px rgba(0,0,0,0.2); border-bottom 4px solid #f1c40f; flex-shrink 0; animation slideInRight 0.5s ease-out; cursor default; }
+        .champion-cardhover { transform translateY(-3px); transition 0.3s; }
+        @keyframes slideInRight { from { opacity0; transformtranslateX(20px); } to { opacity1; transformtranslateX(0); } }
+
+        .champ-icon { font-size 1.8rem; margin-bottom 5px; display block; }
+        .champ-name { font-size 0.85rem; font-weight bold; color #2c3e50; white-space nowrap; overflow hidden; text-overflow ellipsis; max-width 100px; margin 0 auto; display block; }
+        .champ-score { font-size 0.7rem; color #27ae60; font-weight bold; background #e8f5e9; padding 2px 6px; border-radius 10px; margin-top 5px; display inline-block; }
+
+         لیست ویدیوها 
+        .video-item { background #fff; border 2px solid #f1f2f6; border-radius 15px; margin-bottom 15px; padding 15px; display flex; align-items center; gap 12px; cursor pointer; transition all 0.2s; text-align right; position relative; }
+        .video-itemactive { transform scale(0.98); border-color var(--accent); }
+        .video-item.done { border-color var(--success); background #f0fdf4; }
+        .video-icon { font-size 1.5rem; background #f1f2f6; width 45px; height 45px; display flex; align-items center; justify-content center; border-radius 12px; color var(--primary); }
+        .new-badge { position absolute; top -10px; left 10px; background var(--danger); color white; font-size 0.7rem; padding 2px 8px; border-radius 10px; box-shadow 0 2px 5px rgba(0,0,0,0.2); animation popIn 0.5s; }
+        @keyframes popIn { from { transform scale(0); } to { transform scale(1); } }
+
+         دکمه‌ها و ورودی‌ها 
+        .logout-btn { font-size 0.75rem; color var(--danger); background #ffebee; padding 4px 10px; border-radius 8px; cursor pointer; border 1px solid var(--danger); display inline-block; margin-top 5px; }
+        input { width 100%; padding 15px; margin 10px 0; border 2px solid #dfe6e9; border-radius 15px; text-align center; font-family 'Montserrat', 'Vazirmatn'; font-size 1.1rem; outline none; box-sizing border-box; }
+        inputfocus { border-color var(--accent); }
+        .btn-main { background var(--primary); color white; border none; padding 15px; border-radius 15px; cursor pointer; width 100%; font-family inherit; font-size 1.1rem; font-weight bold; box-shadow 0 4px 10px rgba(0,0,0,0.2); margin-top 10px; }
+        .btn-loading { opacity 0.7; cursor wait; }
+
+         مودال عمومی 
+        .modal-overlay { position fixed; top 0; left 0; width 100%; height 100%; background rgba(0,0,0,0.8); z-index 2000; display none; justify-content center; align-items center; backdrop-filter blur(5px); }
+        .modal-content { background white; width 90%; max-width 450px; max-height 80vh; overflow-y auto; padding 20px; border-radius 20px; text-align right; animation slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform translateY(50px); opacity 0; } to { transform translateY(0); opacity 1; } }
+        
+        .notif-item { padding 10px; border-bottom 1px solid #eee; font-size 0.9rem; margin-bottom 5px; }
+        .notif-item.type-alert { background #fff0f0; border-right 3px solid red; }
+        .notif-item.type-success { background #f0fdf4; border-right 3px solid green; }
+        .notif-item.type-info { background #f0f8ff; border-right 3px solid #3498db; }
+
+         لایت باکس 
+        #lightbox { position fixed; top 0; left 0; width 100%; height 100%; background rgba(0,0,0,0.95); z-index 10000; display none; justify-content center; align-items center; cursor zoom-out; }
+        #lightbox img { max-width 95%; max-height 95%; border-radius 10px; box-shadow 0 0 30px rgba(255,255,255,0.1); animation zoomIn 0.3s; }
+        @keyframes zoomIn { from { transform scale(0.8); opacity 0; } to { transform scale(1); opacity 1; } }
+
+         پلیر پیشرفته 
+        #playerContainer { position relative; width 100%; background #000; border-radius 15px; overflow hidden; display flex; flex-direction column; justify-content center; box-shadow 0 10px 30px rgba(0,0,0,0.5); aspect-ratio 169; }
+        #playerContainerfullscreen { width 100vw; height 100vh; border-radius 0; aspect-ratio unset; }
+        #playerContainerfullscreen video { height 100%; width 100%; object-fit contain; }
+        video { width 100%; height 100%; outline none; background #000; }
+        .custom-controls { position absolute; bottom 0; left 0; width 100%; background linear-gradient(to top, rgba(0,0,0,0.9), transparent); padding 15px 15px; box-sizing border-box; display flex; align-items center; gap 15px; transition opacity 0.3s; opacity 1; z-index 20; direction ltr; }
+        .fade-out { opacity 0 !important; pointer-events none; }
+        .c-btn { background none; border none; color white; cursor pointer; font-size 1.4rem; padding 5px; text-shadow 0 0 5px rgba(0,0,0,0.5); transition 0.2s; }
+        .c-btnhover { color var(--accent); transform scale(1.1); }
+        .progress-bar-container { flex 1; background rgba(255,255,255,0.3); height 8px; border-radius 10px; cursor pointer; position relative; display flex; align-items center; touch-action none; }
+        .progress-fill { background var(--accent); height 100%; width 0%; border-radius 10px; box-shadow 0 0 10px var(--accent); position relative; pointer-events none; }
+        .progress-thumb { width 16px; height 16px; background white; border-radius 50%; position absolute; left 0%; transform translateX(-50%); box-shadow 0 0 5px rgba(0,0,0,0.5); cursor grab; z-index 5; transition transform 0.1s; }
+        .progress-thumbactive { transform translateX(-50%) scale(1.3); cursor grabbing; }
+        
+        #securityModal { position absolute; top 0; left 0; width 100%; height 100%; background rgba(0,0,0,0.95); z-index 50; display none; justify-content center; align-items center; flex-direction column; color white; backdrop-filter blur(5px); }
+        .timer-circle { width 80px; height 80px; border-radius 50%; border 5px solid var(--danger); display flex; align-items center; justify-content center; font-size 2rem; font-weight bold; margin-bottom 20px; box-shadow 0 0 20px var(--danger); }
+        .math-question { font-size 2.5rem; font-weight bold; color var(--accent); margin 20px 0; direction ltr; font-family 'Vazirmatn', sans-serif; }
+        .alert-box { position absolute; top 20px; left 50%; transform translateX(-50%); background #c0392b; color white; padding 10px 20px; border-radius 30px; z-index 100; display none; font-size 0.9rem; width max-content; box-shadow 0 5px 15px rgba(0,0,0,0.3); }
+        .back-btn { background #f1f2f6; border none; padding 8px 15px; border-radius 10px; color #636e72; cursor pointer; font-family inherit; font-weight bold; }
+        #downloadContainer { margin-top 20px; display grid; gap 10px; }
+        .download-btn { background #fff; color #34495e; text-decoration none; padding 12px 15px; border-radius 12px; font-size 0.9rem; display flex; align-items center; justify-content space-between; border 2px solid #ecf0f1; transition 0.3s; }
+        .dl-icon { font-size 1.2rem; margin-left 10px; }
+        
+        #syncOverlay { position fixed; top 0; left 0; width 100%; height 100%; background rgba(0,0,0,0.85); z-index 20000; display none; flex-direction column; justify-content center; align-items center; color white; backdrop-filter blur(5px); }
+        .hourglass-spinner { font-size 4rem; margin-bottom 20px; animation spinHourglass 2s infinite ease-in-out; }
+        @keyframes spinHourglass { 0% { transform rotate(0deg); } 50% { transform rotate(180deg); } 100% { transform rotate(360deg); } }
+        .spinner { border 4px solid #f3f3f3; border-radius 50%; border-top 4px solid #3498db; width 30px; height 30px; animation spin 2s linear infinite; }
+        @keyframes spin { 0% { transform rotate(0deg); } 100% { transform rotate(360deg); } }
+        #loading { margin-top 20px; displaynone; color #7f8c8d; font-weightbold; }
+        .offline-badge { positionfixed; bottom10px; left10px; backgroundorange; colorwhite; padding8px 15px; border-radius30px; font-size0.8rem; displaynone; z-index2000; box-shadow 0 4px 10px rgba(0,0,0,0.2); animation pulse 2s infinite; }
+        @keyframes pulse { 0% { transform scale(1); } 50% { transform scale(1.05); } 100% { transform scale(1); } }
+        
+         --- امضا و اینترو --- 
+        #intro-overlay { position fixed; top 0; left 0; width 100%; height 100%; background var(--bg); z-index 5000; display flex; flex-direction column; justify-content center; align-items center; transition all 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        #intro-overlay.move-down { top 85%; transform scale(0.6); opacity 0; pointer-events none; }
+        .signature-container { text-align center; direction ltr; margin-top 20px; }
+        .sig-prefix { font-family 'Montserrat', sans-serif; font-size 0.9rem; color #7f8c8d; letter-spacing 2px; text-transform uppercase; margin-bottom 5px; }
+        .sig-name { font-family 'Cinzel Decorative', cursive; font-size 2.5rem; font-weight 700; background var(--gold); -webkit-background-clip text; -webkit-text-fill-color transparent; position relative; display inline-block; padding 5px; }
+        .sig-nameafter { content attr(data-text); position absolute; left 0; top 0; padding 5px; z-index -1; background linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent); -webkit-background-clip text; -webkit-text-fill-color transparent; background-size 200%; background-position -100%; animation shine 4s infinite linear; }
+        @keyframes shine { to { background-position 200%; } }
+        .footer-signature { margin-top 30px; padding-top 20px; border-top 1px solid rgba(0,0,0,0.05); opacity 0; transition opacity 2s ease; }
+        .footer-signature.show { opacity 1; }
+        
+        #confetti-canvas { 
+            position fixed; 
+            top 0; 
+            left 0; 
+            width 100%; 
+            height 100%; 
+            pointer-events none; 
+            z-index 100000; 
+            display none; 
+        }
+    style
+head
+body
+
+    canvas id=confetti-canvascanvas
+
+    div id=lightbox onclick=this.style.display='none'
+        img id=lightboxImg src=
+    div
+
+    div id=intro-overlay
+        div class=signature-container
+            div class=sig-prefixCreated Bydiv
+            div class=sig-name data-text=Mohammad PakzadMohammad Pakzaddiv
+        div
+    div
+
+    div id=syncOverlay
+        div class=hourglass-spinner⏳div
+        h3 style=font-family 'Vazirmatn'; margin0;در حال ذخیره در سرور...h3
+        p style=font-size0.8rem; color#bdc3c7; margin-top5px;لطفاً صبر کنیدp
+    div
+
+    div id=offlineBadge class=offline-badgediv
+
+    div id=notifModal class=modal-overlay onclick=if(event.target.classList.contains('modal-overlay')) this.style.display='none'
+        div class=modal-content
+            h3 style=margin-top0; colorvar(--primary);📬 پیام‌ها و اعلاناتh3
+            div id=notifListContainerdiv
+            button class=btn-main onclick=document.getElementById('notifModal').style.display='none' style=margin-top15px; background#ddd; color#333;بستنbutton
+        div
+    div
+
+    div id=historyModal class=modal-overlay onclick=if(event.target.classList.contains('modal-overlay')) this.style.display='none'
+        div class=modal-content
+            div style=displayflex; justify-contentspace-between; align-itemscenter; margin-bottom15px; border-bottom1px solid #eee; padding-bottom10px;
+                h3 style=margin0; colorvar(--primary);📜 پرونده آزمون‌هاh3
+                button onclick=document.getElementById('historyModal').style.display='none' style=backgroundnone; bordernone; font-size1.5rem; cursorpointer;×button
+            div
+            div id=historyListContainer class=history-list
+                small style=color#aaa; text-aligncenter; displayblock;درحال دریافت سوابق...small
+            div
+        div
+    div
+
+    div id=screen-login class=card
+        div style=font-size 4rem; margin-bottom 10px;🎓div
+        h2کلاس مجازی چمرانh2
+        p style=color #7f8c8d; font-size 0.9rem;نام کاربری و رمز عبور خود را وارد کنیدp
+        
+        input type=text id=inpUser placeholder=نام کاربری (انگلیسی) style=direction ltr;
+        input type=tel id=inpPass placeholder=رمز عبور (عدد) style=direction ltr;
+        
+        button id=btnLogin class=btn-main onclick=performLogin()ورود امن 🔐button
+        div id=loginMsg style=margin-top15px; color#c0392b; font-size0.9rem;div
+        div id=loadingdiv class=spinnerdivbrدرحال ارتباط با سرور...div
+        
+        div class=signature-container footer-signature id=loginFooterSig
+            div class=sig-prefixCreated Bydiv
+            div class=sig-name data-text=Mohammad PakzadMohammad Pakzaddiv
+        div
+    div
+
+    div id=screen-library class=card
+        div class=user-panel
+            div
+                div id=displayName style=font-weightbold; font-size1.2rem;دانش‌آموزdiv
+                div id=user-rank class=rank-badgeتازه‌واردdiv
+            div
+            div style=text-aligncenter;
+                div class=top-icons
+                    div class=gem-boxspan id=user-gem0span 💎div
+                    div class=icon-btn onclick=showNotifications()
+                        🔔
+                        div id=notifDot class=notif-dotdiv
+                    div
+                div
+                div id=user-xp style=font-size0.9rem; font-weightbold; margin-top5px; opacity0.8;0 XPdiv
+            div
+        div
+
+        div class=wall-of-fame
+            div class=wall-particles p1divdiv class=wall-particles p2divdiv class=wall-particles p3div
+            div style=positionrelative; z-index2;
+                div class=wall-header
+                    div class=wall-title🏆 نخبگان آخرین آزمونdiv
+                    div id=examNameBadge style=font-size0.75rem; backgroundrgba(255,255,255,0.1); padding4px 10px; border-radius15px; color white;درحال بررسی...div
+                div
+                div id=wallContainer class=wall-scrollsmall style=colorrgba(255,255,255,0.7);درحال دریافت لیست قهرمانان...smalldiv
+            div
+        div
+
+        div style=display grid; grid-template-columns 1fr 1fr; gap 10px; margin-bottom 10px;
+            button onclick=window.location.href='azmoon.html' style=background #8e44ad; color white; border none; padding 15px; border-radius 15px; font-family inherit; font-size 1rem; cursor pointer; box-shadow 0 4px 10px rgba(142, 68, 173, 0.3);📝 آزمون آنلاینbutton
+            button onclick=window.location.href='homework.html' style=background #e67e22; color white; border none; padding 15px; border-radius 15px; font-family inherit; font-size 1rem; cursor pointer; box-shadow 0 4px 10px rgba(230, 126, 34, 0.3);📝 دفتر مشقbutton
+        div
+        
+        button onclick=openHistory() style=width100%; background white; color #2c3e50; border 2px solid #ecf0f1; padding 12px; border-radius 15px; font-family inherit; font-size 1rem; cursor pointer; margin-bottom 20px; displayflex; align-itemscenter; justify-contentcenter; gap10px;
+            📜 پرونده و سوابق من
+        button
+        
+        div style=display flex; justify-content space-between; align-items center; margin-bottom10px;
+            h3 style=margin0;درس‌های منh3
+            div class=logout-btn onclick=logout()خروج 🚪div
+        div
+
+        div id=video-list-containerdiv
+        
+        div class=signature-container footer-signature show style=margin-top 10px; bordernone;
+            div class=sig-name data-text=M. Pakzad style=font-size 1rem;M. Pakzaddiv
+        div
+    div
+
+    div id=screen-player class=card style=padding0; backgroundtransparent; box-shadownone; max-width800px;
+        div id=playerContainer
+            div id=cheatAlert class=alert-box⛔ جلو زدن فیلم مجاز نیست!div
+            div id=securityModal
+                div id=timerDisplay class=timer-circle۶۰div
+                h3🔒 حضور غیاب هوشمندh3
+                div id=mathQ class=math-question...div
+                input type=tel id=mathAns placeholder=پاسخ؟ style=width 150px; colorblack; background rgba(255,255,255,0.9);
+                button class=btn-main onclick=checkSecurityAnswer() style=width 150px; backgroundwhite; colorvar(--primary);ثبت پاسخ ✅button
+            div
+            video id=myVideo playsinline disablePictureInPicturevideo
+            div class=custom-controls id=controlsBar
+                button class=c-btn id=playBtn onclick=togglePlay()▶️button
+                div class=progress-bar-container id=progressBarContainer
+                    div id=progressBar class=progress-filldiv
+                    div id=progressThumb class=progress-thumbdiv
+                div
+                span id=timeDisplay style=colorwhite; font-size0.8rem; margin0 10px; min-width50px;0000span
+                button class=c-btn onclick=toggleFullScreen() title=تمام صفحه⛶button
+            div
+        div
+        div style=padding 15px; background white; border-radius 0 0 20px 20px; positionrelative; z-index10; box-shadow 0 8px 20px rgba(0,0,0,0.05);
+            div style=display flex; justify-content space-between; align-items center;
+                button class=back-btn onclick=closePlayer()بازگشتbutton
+                strong id=videoTitle style=font-size 0.9rem;عنوان درسstrong
+            div
+            div id=downloadContainerdiv
+            div style=display flex; justify-content space-between; margin-top 10px; font-size 0.8rem;
+                span id=viewPercent style=color var(--accent); font-weight bold;۰٪span
+                span id=viewStatus style=color #95a5a6;در حال تماشا...span
+            div
+        div
+    div
+    
+    script src=config.jsscript
+    script src=rank.js onerror=alert('فایل rank.js یافت نشد!')script
+
+    script
+         استفاده از کانفیگ
+        const API_URL = APP_CONFIG.API_URL;
+        const DB_KEY = chamran_db_vfinal_;
+        const CHECK_INTERVAL = 300; 
+        
+        let currentUser = null;
+        let playlist = [];
+        let allExamsList = []; 
+        let activeVid = null;
+        let maxTime = 0;
+        let isDone = false;
+        let nextCheckTime = CHECK_INTERVAL;
+        let timerInterval = null;
+        let lastActivityTime = Date.now();
+        let isDragging = false;
+
+        const vid = document.getElementById('myVideo');
+        const container = document.getElementById('playerContainer');
+        const pBar = document.getElementById('progressBar');
+        const pThumb = document.getElementById('progressThumb');
+        const pContainer = document.getElementById('progressBarContainer');
+
+         --- 1. شروع برنامه ---
+        window.addEventListener('load', () = {
+            setTimeout(() = {
+                document.getElementById('intro-overlay').classList.add('move-down');
+                document.querySelectorAll('.card').forEach(c = c.classList.add('show-content'));
+                document.getElementById('loginFooterSig').classList.add('show');
+                setTimeout(() = {
+                    document.getElementById('intro-overlay').style.display = 'none';
+                    checkAuth();
+                }, 1200);
+            }, 2500);
+        });
+
+        function toPersianNum(n) { return n.toString().replace(dg, x = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'][x]); }
+        function getDeviceInfo() { return MobileAndroidi.test(navigator.userAgent)  📱 Mobile  💻 PC; }
+
+         --- 2. سیستم احراز هویت (با قابلیت لود آنی) ---
+        async function checkAuth() {
+            const savedUser = localStorage.getItem(DB_KEY + 'creds');
+            
+            if(savedUser) {
+                 لود آنی از حافظه
+                try {
+                    const userData = JSON.parse(savedUser);
+                    currentUser = userData;
+                    if(userData.jsonData) {
+                        RankSystem.init(userData.jsonData);
+                        document.getElementById('displayName').innerText = userData.displayName;
+                        showScreen('screen-library');
+                    }
+                } catch(e) {}
+                
+                 درخواست بروزرسانی به سرور
+                try {
+                    const creds = JSON.parse(savedUser);
+                    if(typeof SyncManager !== 'undefined') SyncManager.init(creds.username, creds.password);
+
+                    const res = await fetch(`${API_URL}t=${Date.now()}`, { 
+                        method 'POST', headers { Content-Type applicationjson },
+                        body JSON.stringify({ action 'login', username creds.username, password creds.password })
+                    });
+                    const data = await res.json();
+                    
+                    if(data.status === 'success') {
+                        const updatedUser = { username creds.username, password creds.password, displayName data.displayName, jsonData data.jsonData };
+                        localStorage.setItem(DB_KEY + 'creds', JSON.stringify(updatedUser));
+                        
+                        currentUser = updatedUser;
+                        RankSystem.init(data.jsonData);
+                        RankSystem.updateNotifications(data.notifications); 
+                        
+                        document.getElementById('displayName').innerText = data.displayName;
+                        if(document.getElementById('screen-login').classList.contains('active')) showScreen('screen-library');
+                        
+                        fetchPlaylist(); 
+                        fetchExamsForHistory(); 
+                        RankSystem.loadWallOfFame();
+
+                    } else { throw new Error(Login failed); }
+                } catch(e) {
+                    if(!currentUser) showScreen('screen-login');
+                }
+            } else { showScreen('screen-login'); }
+        }
+
+        async function performLogin() {
+            const u = document.getElementById('inpUser').value.trim();
+            const p = document.getElementById('inpPass').value.trim();
+            const btn = document.getElementById('btnLogin');
+            const msg = document.getElementById('loginMsg');
+            
+            if(!u  !p) return msg.innerText = لطفا نام کاربری و رمز را وارد کنید;
+            
+            btn.classList.add('btn-loading'); btn.innerText = درحال بررسی...; msg.innerText = ;
+
+            try {
+                const res = await fetch(API_URL, {
+                    method 'POST', headers { Content-Type applicationjson },
+                    body JSON.stringify({ action 'login', username u, password p })
+                });
+                const data = await res.json();
+                
+                if(data.status === 'success') {
+                    const userData = { username u, password p, displayName data.displayName, jsonData data.jsonData };
+                    localStorage.setItem(DB_KEY + 'creds', JSON.stringify(userData));
+                    currentUser = userData;
+                    
+                    if(typeof SyncManager !== 'undefined') SyncManager.init(u, p);
+                    RankSystem.init(data.jsonData);
+                    RankSystem.updateNotifications(data.notifications);
+                    
+                    document.getElementById('displayName').innerText = data.displayName;
+                    showScreen('screen-library');
+                    fetchPlaylist();
+                    fetchExamsForHistory();
+                    RankSystem.loadWallOfFame();
+
+                } else { msg.innerText = data.message  خطا در ورود; }
+            } catch(e) { msg.innerText = خطا در اتصال به سرور.; }
+            btn.classList.remove('btn-loading'); btn.innerText = ورود امن 🔐;
+        }
+
+        function logout() {
+            if(confirm(خروج از حساب کاربری؟)) {
+                localStorage.removeItem(DB_KEY + 'creds');
+                location.reload();
+            }
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.card').forEach(c = c.classList.remove('active'));
+            const target = document.getElementById(id);
+            target.classList.add('active');
+            setTimeout(() = target.classList.add('show-content'), 50);
+        }
+
+         --- 3. مدیریت محتوا ---
+        async function fetchPlaylist() {
+            const listContainer = document.getElementById('video-list-container');
+            if(!playlist.length) listContainer.innerHTML = `div style=text-aligncenter; padding20px;div class=spinner style=margin0 auto;divp style=color#7f8c8d; margin-top10px;در حال دریافت درس‌ها...pdiv`;
+            try {
+                const res = await fetch(`${API_URL}t=${Date.now()}`, { method 'POST', headers { Content-Type applicationjson }, body JSON.stringify({ action 'get_lessons' }) });
+                const result = await res.json();
+                if(result.status === 'success') {
+                    playlist = result.data;  ترتیب سرور را حفظ می‌کنیم (بدون reverse)
+                    renderList();
+                } 
+            } catch (err) { 
+                if(!playlist.length) listContainer.innerHTML = `div style=text-aligncenter; padding20px; color#c0392b;p⚠️ عدم دسترسی به اینترنتpdiv`;
+            }
+        }
+
+        function renderList() {
+            const list = document.getElementById('video-list-container');
+            list.innerHTML = ;
+            if(!playlist  playlist.length === 0) { list.innerHTML = p style='text-aligncenter;'📭 درسی یافت نشد.p; return; }
+            
+             نمایش برعکس برای کاربر (جدیدترین بالا)
+            const displayList = [...playlist].reverse();
+            
+            displayList.forEach(item = {
+                const isCompleted = RankSystem.data.completed.includes(item.id.toString());
+                const icon = isCompleted  '✅'  '▶️';
+                const hasFile = (item.attach && item.attach.length  3);
+                const newTag = item.is_new  `div class=new-badge🆕 جدیدdiv`  '';
+                
+                const el = document.createElement('div');
+                el.className = `video-item ${isCompleted  'done'  ''}`;
+                el.onclick = () = playVideo(item);
+                el.innerHTML = `${newTag}div class=video-icon${icon}divdiv class=video-infoh4${item.title}h4div style=font-size0.8rem; color#7f8c8d;${isCompleted  'تکمیل شد'  'برای مشاهده کلیک کنید'}${hasFile  '  📎 فایل ضمیمه'  ''}divdiv`;
+                list.appendChild(el);
+            });
+        }
+
+         --- 🌟 بخش تاریخچه و پرونده ---
+        async function fetchExamsForHistory() {
+            try {
+                const res = await fetch(`${API_URL}t=${Date.now()}`, { method 'POST', headers { Content-Type applicationjson }, body JSON.stringify({ action 'get_exams' }) });
+                const result = await res.json();
+                if(result.status === 'success') { allExamsList = result.data; }
+            } catch(e) {}
+        }
+
+        function openHistory() {
+            document.getElementById('historyModal').style.display = 'flex';
+            const container = document.getElementById('historyListContainer');
+            container.innerHTML = '';
+            
+            const details = RankSystem.data.exam_details  {};
+            const takenIds = Object.keys(details);
+            
+            if(takenIds.length === 0) {
+                container.innerHTML = 'p style=text-aligncenter; color#999; margin-top20px;هنوز در آزمونی شرکت نکرده‌اید.p';
+                return;
+            }
+
+            takenIds.reverse(); 
+
+            takenIds.forEach(eid = {
+                const examInfo = allExamsList.find(e = String(e.id) === String(eid));
+                if (!examInfo) return; 
+
+                const examDetail = details[eid];
+                const title = examInfo.title;
+                const date = examDetail.date  تاریخ نامشخص;
+                const score = parseFloat(examDetail.score  0);
+                
+                let quality = نیاز به تلاش;
+                let badgeColor = #e74c3c;
+                
+                if(score = 20) { quality = خیلی خوب (فوق‌العاده); badgeColor = #8e44ad; }
+                else if(score = 17) { quality = خیلی خوب; badgeColor = #2ecc71; }
+                else if(score = 12) { quality = خوب; badgeColor = #2980b9; }
+                else if(score = 8) { quality = قابل قبول; badgeColor = #f1c40f; }
+
+                const div = document.createElement('div');
+                div.style.background = white;
+                div.style.border = 1px solid #eee;
+                div.style.borderRadius = 12px;
+                div.style.padding = 15px;
+                div.style.display = flex;
+                div.style.justifyContent = space-between;
+                div.style.alignItems = center;
+                div.style.boxShadow = 0 2px 5px rgba(0,0,0,0.05);
+                div.style.borderRight = `5px solid ${badgeColor}`;
+                div.style.marginBottom = 10px;
+                
+                div.innerHTML = `
+                    div class=h-info
+                        div style=font-weight bold; color #2c3e50; font-size 0.95rem; margin-bottom 3px;${title}div
+                        div style=font-size 0.75rem; color #95a5a6;${date}div
+                    div
+                    div style=displayflex; align-itemscenter;
+                        button onclick=goToReview('${eid}') style=background #ecf0f1; border none; padding 5px 10px; border-radius 8px; cursor pointer; font-size 0.8rem; margin-left 10px; color #2c3e50;🔍 مرورbutton
+                        div style=font-weight bold; padding 5px 10px; border-radius 8px; font-size 0.8rem; text-align center; background${badgeColor}; colorwhite;${quality}div
+                    div
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function goToReview(examId) {
+            window.location.href = `azmoon.htmlmode=history_review&target=${examId}`;
+        }
+
+         --- 4. نمایش اعلانات ---
+        function showNotifications() {
+            document.getElementById('notifModal').style.display = 'flex';
+            document.getElementById('notifDot').style.display = 'none'; 
+            if(typeof RankSystem !== 'undefined') RankSystem.markNotifsAsRead();
+            
+            const container = document.getElementById('notifListContainer');
+            container.innerHTML = '';
+            const list = RankSystem.notifications  [];
+            
+            if(list.length === 0) {
+                container.innerHTML = 'p style=color#999; text-aligncenter;پیام جدیدی نیست.p';
+            } else {
+                list.forEach(n = {
+                    const content = n.text.replace((https[^s]+)g, (url) = {
+                        if(url.match(.(jpegjpggifpng)$) != null) return `img src=${url} onclick=openLightbox('${url}') style=max-width100%; border-radius8px; margin-top5px; cursorzoom-in;`;
+                        return `a href=${url} target=_blank${url}a`;
+                    });
+
+                    const div = document.createElement('div');
+                    div.className = `notif-item type-${n.type}`;
+                    div.innerHTML = `div${content}divdiv style=font-size0.7rem; color#ccc; margin-top4px;${n.date}div`;
+                    container.appendChild(div);
+                });
+            }
+        }
+
+         --- 5. منطق پلیر ---
+        window.addEventListener('popstate', (event) = {
+            if (document.getElementById('screen-player').classList.contains('active')) {
+                closePlayer(); 
+            }
+        });
+
+        function playVideo(item) {
+            history.pushState({ page 'player' }, Player, #player);
+            
+            activeVid = item;
+            document.getElementById('videoTitle').innerText = item.title;
+            isDone = RankSystem.data.completed.includes(item.id.toString());
+            vid.src = item.link;
+            lastActivityTime = Date.now();
+            
+            const dlContainer = document.getElementById('downloadContainer');
+            dlContainer.innerHTML = ; 
+            if(item.attach && item.attach.length  3) {
+                item.attach.split(',').forEach((f, idx) = {
+                    const parts = f.split('');
+                    const name = parts[0]  `فایل ${idx+1}`;
+                    const link = parts[1]  f;
+                    if(link.length  5) dlContainer.innerHTML += `a href=${link} target=_blank class=download-btndiv style=displayflex;align-itemscenter;span class=dl-icon📥spanspan class=dl-text${name}spandivspan class=dl-arrowدریافتspana`;
+                });
+            }
+            
+            const serverLastTime = RankSystem.getLastPosition(item.id);
+            maxTime = isDone  999999  serverLastTime;
+            
+            nextCheckTime = (isDone  999999  (maxTime + CHECK_INTERVAL));
+            showScreen('screen-player');
+            
+            if(isDone) { updateProgressUI(100); document.getElementById('viewStatus').innerText = تکمیل شد! ✅; document.getElementById('viewPercent').innerText = ۱۰۰٪; } 
+            else { document.getElementById('viewStatus').innerText = در حال تماشا...; updateProgressUI(0); }
+            
+            if(serverLastTime  5 && !isDone) { 
+                if(confirm(ادامه پخش از جای قبلی؟)) vid.currentTime = serverLastTime; else vid.currentTime = 0; 
+            } else vid.currentTime = 0;
+            
+            SyncManager.addToQueue('report', { lesson item.title, status 'شروع درس', details 'ورود به پلیر', device getDeviceInfo() });
+        }
+
+        function closePlayer() {
+            vid.pause();
+            if(document.fullscreenElement) document.exitFullscreen();
+            SyncManager.addToQueue('report', { lesson activeVid  activeVid.title  '', status 'خروج', details `تا دقیقه ${Math.floor(vid.currentTime60)}`, device getDeviceInfo() });
+            renderList(); 
+            showScreen('screen-library');
+            
+            if(window.location.hash === '#player') {
+                history.replaceState(null, null, ' ');
+            }
+        }
+
+        function togglePlay() {
+            if(vid.paused) vid.play(); else vid.pause();
+            updatePlayBtn();
+        }
+        function updatePlayBtn() { document.getElementById('playBtn').innerText = vid.paused  '▶️'  '⏸️'; }
+        vid.addEventListener('play', updatePlayBtn);
+        vid.addEventListener('pause', updatePlayBtn);
+        vid.addEventListener('click', togglePlay);
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                if(container.requestFullscreen) container.requestFullscreen();
+                else if(container.webkitRequestFullscreen) container.webkitRequestFullscreen();
+            } else { if(document.exitFullscreen) document.exitFullscreen(); }
+        }
+
+        pContainer.addEventListener('mousedown', startDrag);
+        pContainer.addEventListener('touchstart', startDrag, {passive false});
+        document.addEventListener('mousemove', doDrag);
+        document.addEventListener('touchmove', doDrag, {passive false});
+        document.addEventListener('mouseup', endDrag);
+        document.addEventListener('touchend', endDrag);
+
+        function startDrag(e) { isDragging = true; vid.pause(); doDrag(e); }
+        function doDrag(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            const rect = pContainer.getBoundingClientRect();
+            const clientX = e.touches  e.touches[0].clientX  e.clientX;
+            let percent = (clientX - rect.left)  rect.width;
+            if (percent  0) percent = 0; if (percent  1) percent = 1;
+            let targetTime = percent  vid.duration;
+            if (targetTime  maxTime + 2 && !isDone) { targetTime = maxTime; percent = maxTime  vid.duration; document.getElementById('cheatAlert').style.display = 'block'; setTimeout(() = document.getElementById('cheatAlert').style.display = 'none', 1000); }
+            updateProgressUI(percent  100);
+            const m = Math.floor(targetTime  60); const s = Math.floor(targetTime % 60);
+            document.getElementById('timeDisplay').innerText = `${m}${s  10  '0'+s  s}`;
+            pContainer.dataset.targetTime = targetTime;
+        }
+        function endDrag(e) {
+            if (!isDragging) return;
+            isDragging = false;
+            const targetTime = parseFloat(pContainer.dataset.targetTime  vid.currentTime);
+            vid.currentTime = targetTime;
+            vid.play();
+        }
+        function updateProgressUI(percent) { pBar.style.width = percent + %; pThumb.style.left = percent + %; }
+
+        vid.addEventListener('timeupdate', () = {
+            if (isDragging) return;
+            const percent = (vid.currentTime  vid.duration)  100;
+            if(!isNaN(percent)) { updateProgressUI(percent); document.getElementById('viewPercent').innerText = toPersianNum(Math.floor(percent)) + ٪; }
+            const m = Math.floor(vid.currentTime  60); const s = Math.floor(vid.currentTime % 60);
+            document.getElementById('timeDisplay').innerText = `${m}${s  10  '0'+s  s}`;
+            
+            if(!vid.seeking && vid.currentTime  maxTime) { 
+                maxTime = vid.currentTime; 
+                RankSystem.savePosition(activeVid.id, vid.currentTime); 
+            }
+            
+            if(!isDone && vid.currentTime  nextCheckTime) triggerSecurityCheck();
+            if(vid.duration && percent = 98 && !isDone) finishLesson();
+        });
+
+        function triggerSecurityCheck() {
+            vid.pause();
+            const n1 = Math.floor(Math.random()10)+1; const n2 = Math.floor(Math.random()10)+1;
+            window.securityResult = n1 + n2; 
+            document.getElementById('mathQ').innerText = `${toPersianNum(n1)} + ${toPersianNum(n2)} = ؟`;
+            document.getElementById('mathAns').value = ;
+            document.getElementById('securityModal').style.display = 'flex';
+            let timeLeft = 60;
+            document.getElementById('timerDisplay').innerText = toPersianNum(timeLeft);
+            if(timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() = {
+                timeLeft--;
+                document.getElementById('timerDisplay').innerText = toPersianNum(timeLeft);
+                if(timeLeft = 0) { clearInterval(timerInterval); punishUser(); }
+            }, 1000);
+        }
+
+        function checkSecurityAnswer() {
+            function toEn(s) { return s.replace([۰-۹]g, d = ۰۱۲۳۴۵۶۷۸۹.indexOf(d)); }
+            if(parseInt(toEn(document.getElementById('mathAns').value)) === window.securityResult) {
+                clearInterval(timerInterval); document.getElementById('securityModal').style.display = 'none'; nextCheckTime = vid.currentTime + CHECK_INTERVAL; vid.play();
+            } else { document.getElementById('mathAns').style.borderColor = 'red'; }
+        }
+
+        function punishUser() {
+            document.getElementById('securityModal').style.display = 'none'; 
+            alert(⏰ زمان تمام شد! بازگشت به عقب.); 
+            let penaltyTime = Math.max(0, vid.currentTime - 400); 
+            vid.currentTime = penaltyTime; 
+            maxTime = penaltyTime; 
+            RankSystem.savePosition(activeVid.id, penaltyTime, true); 
+        }
+
+        function finishLesson() {
+            if (isDone) return;
+            isDone = true;
+            vid.pause();
+
+            if (document.fullscreenElement) document.exitFullscreen();
+            if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+
+            document.getElementById('viewStatus').innerText = تکمیل شد! ✅;
+
+            SyncManager.addToQueue('claim_reward', { reward_type 'lesson', reward_id activeVid.id });
+
+            setTimeout(() = {
+                 صدا زدن تابع جشن از فایل rank.js
+                if(typeof launchConfetti === 'function') launchConfetti();
+            }, 300);
+        }
+
+        function openLightbox(src) {
+            document.getElementById('lightboxImg').src = src;
+            document.getElementById('lightbox').style.display = 'flex';
+        }
+
+        let fadeTimer;
+        container.addEventListener('mousemove', () = {
+            document.getElementById('controlsBar').classList.remove('fade-out'); clearTimeout(fadeTimer); fadeTimer = setTimeout(() = { if(!vid.paused && !isDragging) document.getElementById('controlsBar').classList.add('fade-out'); }, 3000);
+        });
+        
+        document.addEventListener(visibilitychange, function() {
+            if (document.hidden) {
+                vid.pause(); 
+                updatePlayBtn(); 
+            }
+        });
+    script
+body
+html

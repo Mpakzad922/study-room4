@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>دفتر مشق و تکالیف 📝</title>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" />
+    <style>
+        :root { --primary: #2c3e50; --accent: #e67e22; --bg: #ecf0f1; --success: #27ae60; --danger: #c0392b; --info: #3498db; }
+        body { font-family: 'Vazirmatn', sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+        /* کارت‌های اصلی */
+        .card { background: white; width: 100%; max-width: 500px; padding: 20px; border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); margin-bottom: 15px; transition: 0.2s; position: relative; overflow: hidden; }
+        .card:active { transform: scale(0.98); }
+        
+        .header-card { text-align: center; background: linear-gradient(135deg, #2c3e50, #34495e); color: white; }
+        .back-btn { position: absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 35px; height: 35px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        /* لیست تکالیف */
+        .hw-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 2px solid #eee; border-radius: 15px; margin-bottom: 10px; cursor: pointer; background: white; transition: 0.2s; }
+        .hw-item.done { border-color: var(--success); background: #f0fdf4; }
+        .hw-item.pending { border-color: var(--accent); background: #fdf5e6; }
+        
+        .badge { padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; color: white; font-weight: bold; }
+        .b-new { background: var(--danger); animation: pulse 1.5s infinite; }
+        .b-done { background: var(--success); }
+        .b-wait { background: var(--accent); }
+        
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
+        /* صفحه جزئیات (مودال تمام صفحه) */
+        #detailPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; display: none; flex-direction: column; overflow-y: auto; padding: 20px; box-sizing: border-box; align-items: center; }
+        
+        .desc-box { background: #fff8e1; border: 1px dashed #f1c40f; padding: 15px; border-radius: 12px; margin-bottom: 20px; line-height: 1.6; font-size: 0.95rem; width: 100%; box-sizing: border-box; }
+
+        /* بخش ضبط صدا */
+        .recorder-box { text-align: center; padding: 20px; border: 2px dashed #bdc3c7; border-radius: 20px; background: #f9f9f9; margin-bottom: 20px; width: 100%; box-sizing: border-box; }
+        .mic-btn { width: 80px; height: 80px; border-radius: 50%; border: none; background: var(--danger); color: white; font-size: 2rem; cursor: pointer; box-shadow: 0 5px 15px rgba(192, 57, 43, 0.4); transition: 0.3s; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+        .mic-btn.recording { animation: ripple 1s infinite; background: #e74c3c; }
+        @keyframes ripple { 0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); } 100% { box-shadow: 0 0 0 20px rgba(231, 76, 60, 0); } }
+        
+        .timer { font-size: 1.5rem; font-weight: bold; margin-top: 10px; color: var(--primary); font-family: monospace; }
+        
+        .preview-box { display: none; margin-top: 15px; }
+        .audio-player { width: 100%; margin-top: 10px; }
+
+        /* دکمه‌ها */
+        .action-btn { width: 100%; padding: 15px; border: none; border-radius: 15px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 10px; font-family: inherit; color: white; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-send { background: var(--success); box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3); }
+        .btn-photo { background: var(--info); box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3); }
+        .btn-cancel { background: #95a5a6; }
+
+        /* فیدبک معلم */
+        .feedback-box { background: white; border-right: 5px solid var(--success); padding: 15px; border-radius: 12px; margin-top: 20px; display: none; width: 100%; box-sizing: border-box; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        
+        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 2000; display: flex; justify-content: center; align-items: center; flex-direction: column; font-weight: bold; color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div id="loading">
+        <div style="font-size:2rem; margin-bottom:10px;">⏳</div>
+        درحال بارگذاری...
+    </div>
+
+    <div class="card header-card">
+        <button class="back-btn" onclick="window.location.href='index.html'">↩️</button>
+        <h2 style="margin:0;">دفتر مشق 📝</h2>
+        <p style="font-size:0.9rem; opacity:0.9; margin-top:5px;">تکالیف خود را اینجا ارسال کنید</p>
+    </div>
+
+    <div id="hwListContainer" style="width: 100%; max-width: 500px;"></div>
+
+    <div id="detailPage">
+        <div class="card header-card" style="margin-bottom:20px; border-radius:0 0 20px 20px; width:100%; max-width:500px; padding:15px;">
+            <button class="back-btn" onclick="closeDetail()">✖️</button>
+            <h3 id="dTitle" style="margin:0;">عنوان تکلیف</h3>
+            <div id="dScore" style="font-size:0.8rem; background:rgba(255,255,255,0.2); display:inline-block; padding:3px 10px; border-radius:10px; margin-top:5px;">20 امتیاز</div>
+        </div>
+
+        <div style="width:100%; max-width:500px;">
+            <div class="desc-box">
+                <b>📌 توضیحات معلم:</b><br>
+                <span id="dDesc">...</span>
+            </div>
+
+            <div id="feedbackContainer" class="feedback-box">
+                <div style="font-weight:bold; color:var(--success); font-size:1.1rem; margin-bottom:5px;">✅ نمره داده شد!</div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <span>نتیجه: <b id="fGrade">عالی</b></span>
+                </div>
+                <p id="fText" style="color:#555; font-size:0.9rem; margin:0; background:#f9f9f9; padding:10px; border-radius:8px;">...</p>
+            </div>
+
+            <div id="submissionArea">
+                <div class="recorder-box">
+                    <div id="recStatus" style="margin-bottom:15px; color:#7f8c8d;">برای ضبط صدا دکمه را نگه دارید</div>
+                    
+                    <button id="micBtn" class="mic-btn">🎙️</button>
+                    <div id="timerDisplay" class="timer">00:00</div>
+
+                    <div id="audioPreview" class="preview-box">
+                        <audio id="audioPlayer" controls class="audio-player"></audio>
+                        <button onclick="resetRecorder()" style="background:none; border:none; color:var(--danger); cursor:pointer; margin-top:5px; font-size:0.9rem;">🗑️ حذف و ضبط مجدد</button>
+                        <button onclick="uploadVoice()" class="action-btn btn-send">📤 ارسال ویس</button>
+                    </div>
+                </div>
+
+                <div style="text-align:center; color:#aaa; margin:10px 0;">--- یا ---</div>
+
+                <button onclick="document.getElementById('imgInput').click()" class="action-btn btn-photo">📷 ارسال عکس از گالری</button>
+                <input type="file" id="imgInput" accept="image/*" style="display:none" onchange="handleImage(this)">
+                
+                <div id="imgPreviewBox" style="display:none; margin-top:15px; text-align:center;">
+                    <img id="imgPreview" src="" style="max-width:100%; border-radius:10px; border:2px solid #ddd;">
+                    <button onclick="uploadImage()" class="action-btn btn-send" style="margin-top:10px;">📤 ارسال عکس</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="rank.js"></script>
+
+    <script>
+        let currentHwId = null;
+        let mediaRecorder;
+        let audioChunks = [];
+        let audioBlob = null;
+        let timerInterval;
+        let selectedImageFile = null;
+
+        // --- 1. دریافت لیست تکالیف ---
+        window.addEventListener('load', () => {
+            fetchHomeworks();
+        });
+
+        async function fetchHomeworks() {
+            // استفاده از لاگین ذخیره شده
+            const saved = localStorage.getItem('chamran_db_vfinal_creds');
+            if(!saved) { window.location.href = 'index.html'; return; }
+            const user = JSON.parse(saved);
+
+            try {
+                const res = await fetch(SERVER_URL, {
+                    method: 'POST', headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: 'get_homeworks', username: user.username })
+                });
+                const data = await res.json();
+                
+                if(data.status === 'success') {
+                    renderList(data.data);
+                } else {
+                    document.getElementById('hwListContainer').innerHTML = '<p style="text-align:center">خطا در دریافت اطلاعات</p>';
+                }
+            } catch(e) {
+                alert("خطا در اتصال به سرور");
+            }
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function renderList(list) {
+            const container = document.getElementById('hwListContainer');
+            container.innerHTML = '';
+            
+            if(list.length === 0) {
+                container.innerHTML = '<div class="card" style="text-align:center; color:#999;">📭 فعلاً مشقی نداری!</div>';
+                return;
+            }
+
+            // مرتب‌سازی (جدیدترین بالا)
+            list.reverse().forEach(hw => {
+                let statusClass = '';
+                let badgeHtml = '';
+                let statusText = 'انجام نشده';
+
+                if(hw.my_status) {
+                    if(hw.my_status.status === 'graded') {
+                        statusClass = 'done';
+                        badgeHtml = '<span class="badge b-done">نمره: ' + (hw.my_status.grade || 'ثبت شده') + '</span>';
+                        statusText = 'تکمیل شده';
+                    } else {
+                        statusClass = 'pending';
+                        badgeHtml = '<span class="badge b-wait">در حال بررسی</span>';
+                        statusText = 'ارسال شده';
+                    }
+                } else {
+                    badgeHtml = '<span class="badge b-new">جدید</span>';
+                }
+
+                const div = document.createElement('div');
+                div.className = `hw-item ${statusClass}`;
+                div.onclick = () => openDetail(hw);
+                div.innerHTML = `
+                    <div>
+                        <div style="font-weight:bold; font-size:1rem; margin-bottom:5px;">${hw.title}</div>
+                        <div style="font-size:0.8rem; color:#7f8c8d;">📅 ${hw.date}</div>
+                    </div>
+                    <div style="text-align:left;">
+                        ${badgeHtml}
+                        <div style="font-size:0.7rem; margin-top:5px; color:#95a5a6;">${statusText}</div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // --- 2. مدیریت جزئیات ---
+        function openDetail(hw) {
+            currentHwId = hw.id;
+            document.getElementById('detailPage').style.display = 'flex';
+            document.getElementById('dTitle').innerText = hw.title;
+            document.getElementById('dDesc').innerText = hw.desc || "توضیحاتی ثبت نشده است.";
+            document.getElementById('dScore').innerText = hw.score + " امتیاز";
+
+            const subArea = document.getElementById('submissionArea');
+            const fbContainer = document.getElementById('feedbackContainer');
+
+            // ریست کردن فرم‌ها
+            resetRecorder();
+            document.getElementById('imgPreviewBox').style.display = 'none';
+            selectedImageFile = null;
+
+            if(hw.my_status && hw.my_status.status === 'graded') {
+                // اگر نمره داده شده، فرم ارسال مخفی شود
+                subArea.style.display = 'none';
+                fbContainer.style.display = 'block';
+                document.getElementById('fGrade').innerText = hw.my_status.grade;
+                document.getElementById('fText').innerText = hw.my_status.feedback || "بدون پیام";
+            } else if (hw.my_status && hw.my_status.status === 'pending') {
+                // اگر ارسال شده ولی هنوز نمره نگرفته
+                subArea.style.display = 'block'; // اجازه ارسال مجدد (ویرایش)
+                fbContainer.style.display = 'none';
+                document.getElementById('recStatus').innerText = "✅ قبلاً فایل ارسال کردید (ارسال مجدد جایگزین می‌شود)";
+            } else {
+                // هنوز ارسال نشده
+                subArea.style.display = 'block';
+                fbContainer.style.display = 'none';
+                document.getElementById('recStatus').innerText = "برای ضبط صدا دکمه را بزنید";
+            }
+        }
+
+        function closeDetail() {
+            document.getElementById('detailPage').style.display = 'none';
+            if(mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+        }
+
+        // --- 3. ضبط صدا (Voice Recorder) ---
+        const micBtn = document.getElementById('micBtn');
+        const timerDisplay = document.getElementById('timerDisplay');
+        let startTime;
+
+        micBtn.addEventListener('click', async () => {
+            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+                startRecording();
+            } else {
+                stopRecording();
+            }
+        });
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+                
+                mediaRecorder.onstop = () => {
+                    audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); // فرمت استاندارد وب
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const player = document.getElementById('audioPlayer');
+                    player.src = audioUrl;
+                    
+                    document.getElementById('micBtn').style.display = 'none';
+                    document.getElementById('timerDisplay').style.display = 'none';
+                    document.getElementById('audioPreview').style.display = 'block';
+                    
+                    clearInterval(timerInterval);
+                };
+
+                mediaRecorder.start();
+                micBtn.classList.add('recording');
+                startTime = Date.now();
+                
+                timerInterval = setInterval(() => {
+                    const diff = Math.floor((Date.now() - startTime) / 1000);
+                    const m = Math.floor(diff / 60);
+                    const s = diff % 60;
+                    timerDisplay.innerText = `${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
+                }, 1000);
+
+            } catch (err) {
+                alert("دسترسی به میکروفون داده نشد! لطفاً بررسی کنید.");
+            }
+        }
+
+        function stopRecording() {
+            if(mediaRecorder) mediaRecorder.stop();
+            micBtn.classList.remove('recording');
+        }
+
+        function resetRecorder() {
+            audioBlob = null;
+            audioChunks = [];
+            document.getElementById('micBtn').style.display = 'flex';
+            document.getElementById('micBtn').classList.remove('recording');
+            document.getElementById('timerDisplay').style.display = 'block';
+            document.getElementById('timerDisplay').innerText = "00:00";
+            document.getElementById('audioPreview').style.display = 'none';
+            if(timerInterval) clearInterval(timerInterval);
+        }
+
+        // --- 4. آپلود عکس ---
+        function handleImage(input) {
+            if (input.files && input.files[0]) {
+                selectedImageFile = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('imgPreview').src = e.target.result;
+                    document.getElementById('imgPreviewBox').style.display = 'block';
+                };
+                reader.readAsDataURL(selectedImageFile);
+            }
+        }
+
+        // --- 5. ارسال نهایی به سرور ---
+        async function uploadVoice() {
+            if(!audioBlob) return;
+            const reader = new FileReader();
+            reader.readAsDataURL(audioBlob);
+            reader.onloadend = () => {
+                const base64data = reader.result;
+                performSubmit(base64data, 'voice.webm', 'voice');
+            }
+        }
+
+        async function uploadImage() {
+            if(!selectedImageFile) return;
+            const reader = new FileReader();
+            reader.readAsDataURL(selectedImageFile);
+            reader.onloadend = () => {
+                const base64data = reader.result;
+                performSubmit(base64data, selectedImageFile.name, 'image');
+            }
+        }
+
+        async function performSubmit(fileData, fileName, type) {
+            document.getElementById('loading').style.display = 'flex';
+            const user = JSON.parse(localStorage.getItem('chamran_db_vfinal_creds'));
+
+            // 1. آپلود فایل
+            try {
+                const upRes = await fetch(SERVER_URL, {
+                    method: 'POST', headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        action: 'upload_file', 
+                        file_data: fileData, 
+                        file_name: fileName,
+                        hw_type: type, // برای پوشه‌بندی در سرور
+                        username: user.username 
+                    })
+                });
+                const upData = await upRes.json();
+
+                if(upData.status === 'success') {
+                    // 2. ثبت در دیتابیس
+                    const subRes = await fetch(SERVER_URL, {
+                        method: 'POST', headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ 
+                            action: 'submit_homework', 
+                            username: user.username, 
+                            password: user.password,
+                            hw_id: currentHwId,
+                            link: upData.url,
+                            hw_type: type
+                        })
+                    });
+                    const subData = await subRes.json();
+                    
+                    if(subData.status === 'success') {
+                        alert("✅ با موفقیت ارسال شد!");
+                        closeDetail();
+                        fetchHomeworks();
+                    } else { alert("خطا در ثبت: " + subData.message); }
+                } else { alert("خطا در آپلود: " + upData.message); }
+
+            } catch(e) { alert("خطای شبکه"); }
+            document.getElementById('loading').style.display = 'none';
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>سالن امتحانات هوشمند</title>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" />
+    <style>
+        :root { --primary: #2c3e50; --accent: #8e44ad; --bg: #f0f2f5; --success: #27ae60; --danger: #c0392b; --warning: #f1c40f; }
+        body { font-family: 'Vazirmatn', sans-serif; background: var(--bg); margin: 0; padding: 15px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+        /* کارت‌ها */
+        .card { background: white; width: 100%; max-width: 650px; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-bottom: 20px; text-align: center; animation: fadeIn 0.5s; position: relative; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* دکمه‌ها */
+        .btn { border: none; padding: 12px; border-radius: 12px; font-size: 1rem; cursor: pointer; font-family: inherit; width: 100%; font-weight: bold; transition: 0.2s; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn:active { transform: scale(0.98); }
+        .btn-start { background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(142, 68, 173, 0.3); }
+        .btn-next { background: #2980b9; color: white; }
+        .btn-finish { background: var(--success); color: white; display: none; }
+        .btn-back { background: #ecf0f1; color: #2c3e50; }
+        
+        /* لیست آزمون‌ها */
+        .exam-item { background: #fff; border: 2px solid #e1bee7; border-radius: 16px; padding: 15px; margin-bottom: 12px; text-align: right; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; position: relative; overflow: hidden; }
+        .exam-item:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .exam-item.locked { background: #f8f9fa; border-color: #bdc3c7; opacity: 0.9; }
+        .exam-info h4 { margin: 0; color: #4a148c; font-size: 1rem; }
+        .exam-info small { color: #7f8c8d; font-size: 0.8rem; display: block; margin-top: 5px; }
+        
+        /* تیک جدید */
+        .new-badge { position: absolute; top: 0; left: 0; background: var(--danger); color: white; font-size: 0.7rem; padding: 3px 10px; border-radius: 0 0 10px 0; animation: pulse 1.5s infinite; font-weight: bold; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
+
+        /* صفحه راهنما (Intro) */
+        .intro-box { background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); border: 1px solid #ddd; border-radius: 15px; padding: 20px; text-align: center; margin-bottom: 20px; }
+        .intro-stat { display: flex; justify-content: space-around; margin: 20px 0; }
+        .istat { text-align: center; }
+        .istat-val { font-size: 1.5rem; font-weight: bold; color: var(--primary); display: block; }
+        .istat-label { font-size: 0.8rem; color: #7f8c8d; }
+        
+        .reward-list { text-align: right; background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px dashed #27ae60; background-color: #f0fdf4; }
+        .reward-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .reward-row:last-child { margin-bottom: 0; border: none; }
+        
+        /* تایمر */
+        .timer-box { font-size: 1.4rem; font-weight: bold; color: var(--danger); background: #fadbd8; padding: 5px 15px; border-radius: 12px; display: inline-block; }
+
+        /* تصاویر و لایت‌باکس */
+        .q-image { width: 100%; max-width: 100%; height: auto; max-height: 300px; object-fit: contain; border-radius: 12px; border: 1px solid #eee; margin: 15px 0; cursor: zoom-in; background: #fafafa; display: block; margin-left: auto; margin-right: auto; }
+        #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 20000; display: none; justify-content: center; align-items: center; cursor: zoom-out; backdrop-filter: blur(5px); }
+        #lightbox img { max-width: 95%; max-height: 95%; border-radius: 10px; box-shadow: 0 0 50px rgba(255,255,255,0.2); animation: zoomIn 0.3s; }
+        @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* گزینه‌ها */
+        .option { background: #f8f9fa; border: 2px solid #e9ecef; padding: 15px; border-radius: 12px; margin-bottom: 10px; cursor: pointer; text-align: right; transition: 0.2s; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; box-sizing: border-box; }
+        .option:hover { border-color: #b2bec3; }
+        .option.selected { background: #e8f6f3; border-color: var(--success); color: var(--success); font-weight: bold; box-shadow: 0 4px 10px rgba(39, 174, 96, 0.2); transform: scale(1.01); }
+        .option img { max-width: 100%; height: auto; max-height: 250px; border-radius: 8px; border: 1px solid #ddd; object-fit: contain; align-self: center; margin-top: 5px; display: block; }
+
+        /* نوار نمره */
+        .score-container { margin: 40px 0 20px 0; position: relative; padding-top: 20px; direction: ltr; } 
+        .score-bar { height: 25px; width: 100%; border-radius: 15px; background: linear-gradient(90deg, #e74c3c 0%, #e74c3c 39%, #f1c40f 40%, #f1c40f 59%, #2ecc71 60%, #2ecc71 79%, #8e44ad 80%, #8e44ad 100%); position: relative; box-shadow: inset 0 3px 6px rgba(0,0,0,0.2); overflow: visible; }
+        
+        .score-pointer { 
+            position: absolute; 
+            top: -15px; 
+            width: 0; height: 0; 
+            border-left: 10px solid transparent; 
+            border-right: 10px solid transparent; 
+            border-top: 18px solid #2c3e50; 
+            transform: translateX(-50%); 
+            transition: left 1.5s cubic-bezier(0.22, 1, 0.36, 1); 
+            left: 0%; z-index: 100;
+        }
+        .score-pointer::after { content: ''; position: absolute; top: -20px; left: -2px; width: 4px; height: 4px; background: white; border-radius: 50%; }
+
+        .score-text { font-size: 2rem; font-weight: bold; margin-top: 25px; color: #2c3e50; text-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        .stat-grid { display: flex; justify-content: space-around; margin: 20px 0; background: #f8f9fa; padding: 15px; border-radius: 12px; }
+        .stat-item { text-align: center; }
+        .stat-num { font-size: 1.3rem; font-weight: bold; display: block; }
+        .stat-label { font-size: 0.8rem; color: #7f8c8d; }
+
+        #loading { color: #7f8c8d; font-weight: bold; margin-top: 20px; }
+        
+        #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100000; display: none; }
+        
+        /* استایل مرور */
+        .review-q { border-bottom: 1px solid #eee; padding: 20px 0; }
+        .review-q img { max-width: 100% !important; height: auto !important; border-radius: 10px; margin: 10px auto; display: block; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+        .r-opt { padding: 10px; margin: 5px 0; border-radius: 10px; border: 1px solid #eee; background: #fff; }
+    </style>
+</head>
+<body>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <div id="lightbox" onclick="this.style.display='none'">
+        <img id="lightboxImg" src="">
+    </div>
+
+    <div id="lobby" class="card">
+        <div style="font-size: 3.5rem; margin-bottom: 5px;">📝</div>
+        <h2 id="welcomeText" style="margin:0 0 10px 0;">سالن امتحانات</h2>
+        <div id="loading">⏳ در حال دریافت اطلاعات...</div>
+        <div id="resumeAlert" style="display:none; background:#fff3cd; color:#856404; padding:12px; border-radius:12px; margin-bottom:15px; border:1px solid #ffeeba;">⚠️ آزمون ناتمام بازیابی شد!</div>
+        <div id="examList"></div>
+        <button class="btn btn-back" onclick="window.location.href='index.html'">🏠 بازگشت به کلاس</button>
+    </div>
+
+    <div id="introCard" class="card" style="display:none;">
+        <h2 style="color:var(--primary); margin-bottom:10px;" id="introTitle">عنوان آزمون</h2>
+        
+        <div class="intro-box">
+            <div class="intro-stat">
+                <div class="istat">
+                    <span class="istat-val" id="introQCount">0</span>
+                    <span class="istat-label">سوال</span>
+                </div>
+                <div class="istat">
+                    <span class="istat-val" id="introTime">0</span>
+                    <span class="istat-label">دقیقه زمان</span>
+                </div>
+            </div>
+            <p style="font-size:0.9rem; color:#e67e22; font-weight:bold;">⚠️ نکته مهم: امکان بازگشت به سوال قبل وجود ندارد!</p>
+        </div>
+
+        <div class="reward-list">
+            <h4 style="margin:0 0 10px 0; color:#27ae60;">🎁 جوایز این آزمون:</h4>
+            <div class="reward-row">
+                <span>💎 عالی (همه درست)</span>
+                <span style="font-weight:bold; color:#8e44ad;" id="rewEx">300 XP</span>
+            </div>
+            <div class="reward-row">
+                <span>🥇 خیلی خوب</span>
+                <span style="font-weight:bold; color:#27ae60;" id="rewVg">100 XP</span>
+            </div>
+            <div class="reward-row">
+                <span>🙂 خوب</span>
+                <span style="font-weight:bold; color:#2980b9;" id="rewNr">20 XP</span>
+            </div>
+        </div>
+
+        <button class="btn btn-start" onclick="startExamNow()" style="padding:15px; font-size:1.2rem;">🚀 شروع آزمون</button>
+        <button class="btn btn-back" onclick="location.reload()">انصراف</button>
+    </div>
+
+    <div id="examArea" class="card" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #f1f2f6; padding-bottom: 10px;">
+            <span id="qProgress" style="font-weight:bold; color:var(--primary);">سوال ۱</span>
+            <div id="timer" class="timer-box">00:00</div>
+        </div>
+        <img id="questionImage" class="q-image" src="" onclick="openLightbox(this.src)" style="display:none;">
+        <h3 id="questionText" style="text-align: right; line-height: 1.8; font-size: 1.1rem; color: #34495e;">...</h3>
+        <div id="optionsContainer"></div>
+        <button id="btnNext" class="btn btn-next" onclick="nextQuestion()">سوال بعدی ⬅️</button>
+        <button id="btnFinish" class="btn btn-finish" onclick="finishExam()">✅ ثبت نهایی آزمون</button>
+    </div>
+
+    <div id="reportCard" class="card" style="display: none;">
+        <h2 style="color:var(--accent);">📊 نتیجه عملکرد</h2>
+        
+        <div class="score-container">
+            <div class="score-pointer" id="scorePointer"></div>
+            <div class="score-bar"></div>
+            <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:#aaa; margin-top:5px; direction:ltr;">
+                <span>0%</span><span>40%</span><span>60%</span><span>80%</span><span>100%</span>
+            </div>
+        </div>
+        
+        <div id="qualitativeScore" class="score-text">...</div>
+
+        <div class="stat-grid">
+            <div class="stat-item">
+                <span id="resCorrect" class="stat-num" style="color:var(--success)">0</span>
+                <span class="stat-label">درست ✅</span>
+            </div>
+            <div class="stat-item">
+                <span id="resWrong" class="stat-num" style="color:var(--danger)">0</span>
+                <span class="stat-label">غلط ❌</span>
+            </div>
+            <div class="stat-item">
+                <span id="resEmpty" class="stat-num" style="color:#95a5a6">0</span>
+                <span class="stat-label">نزده ⚪</span>
+            </div>
+        </div>
+
+        <div id="xpMsg" style="background:#e8f6f3; color:#16a085; padding:10px; border-radius:10px; margin-bottom:15px; display:none; margin-top:20px;">
+            ✅ اطلاعات در سوابق شما ثبت شد.
+        </div>
+
+        <button id="btnReview" class="btn" style="background:#f39c12; color:white; display:none;" onclick="startReviewMode()">🔍 تحلیل و مرور پاسخ‌ها</button>
+        <button class="btn btn-back" onclick="window.location.href='index.html'">🏠 بازگشت به کلاس</button>
+    </div>
+
+    <div id="reviewArea" class="card" style="display: none; text-align: right;">
+        <h3 style="text-align:center; color:#e67e22; border-bottom:2px solid #eee; padding-bottom:10px;">🧐 تحلیل آزمون</h3>
+        <div id="reviewContent"></div>
+        <button class="btn btn-back" onclick="window.location.href='index.html'">🏠 پایان مرور و بازگشت</button>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="rank.js"></script>
+    <script>
+        // استفاده از کانفیگ
+        const API_URL = APP_CONFIG.API_URL;
+        const EXAM_STATE_KEY = "chamran_exam_active_session_v8"; 
+        
+        let currentUser = null;
+        let examsMap = {};
+        let currentExamId = null;
+        let currentQuestions = [];
+        let currentQIndex = 0;
+        let userAnswers = {};
+        let timerInterval;
+        let timeRemaining = 0;
+
+        function init() {
+            const savedUser = localStorage.getItem('chamran_db_vfinal_creds');
+            if(!savedUser) { window.location.href = 'index.html'; return; }
+            try {
+                currentUser = JSON.parse(savedUser);
+                document.getElementById('welcomeText').innerText = `سلام ${currentUser.displayName}`;
+                
+                if(currentUser.jsonData) RankSystem.init(currentUser.jsonData);
+                SyncManager.init(currentUser.username, currentUser.password);
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                if(urlParams.get('mode') === 'history_review') {
+                    prepareReviewMode(urlParams.get('target'));
+                } else {
+                    performFullSync();
+                }
+            } catch(e) { window.location.href = 'index.html'; }
+        }
+
+        async function performFullSync() {
+            try {
+                const resExams = await fetch(`${API_URL}?t=${Date.now()}`, { method: 'POST', headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'get_exams' }) });
+                const examData = await resExams.json();
+
+                if(examData.status === 'success') {
+                    processExams(examData.data || []);
+                    checkActiveSession();
+                    
+                    fetch(API_URL, { method: 'POST', headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'login', username: currentUser.username, password: currentUser.password }) })
+                    .then(r=>r.json()).then(d=>{
+                         if(d.status==='success') {
+                             RankSystem.init(d.jsonData);
+                             updateLocalCreds(d.jsonData);
+                             processExams(examData.data || []); 
+                         }
+                    });
+                }
+            } catch(e) { document.getElementById('loading').innerHTML = `<span style="color:red">❌ خطا در اتصال</span>`; }
+        }
+
+        function updateLocalCreds(jsonData) {
+            if(currentUser) {
+                currentUser.jsonData = jsonData;
+                localStorage.setItem('chamran_db_vfinal_creds', JSON.stringify(currentUser));
+            }
+        }
+
+        function processExams(list) {
+            examsMap = {};
+            const container = document.getElementById('examList');
+            container.innerHTML = '';
+            document.getElementById('loading').style.display = 'none';
+
+            if(list.length === 0) { container.innerHTML = "<p>آزمونی یافت نشد.</p>"; return; }
+
+            // نمایش برعکس
+            list.reverse().forEach(ex => {
+                examsMap[ex.id] = ex;
+                const sId = String(ex.id);
+                const userExams = RankSystem.data.exams || {};
+                const score = userExams[sId]; 
+                const isTaken = (score !== undefined);
+
+                const div = document.createElement('div');
+                div.className = `exam-item ${isTaken ? 'locked' : ''}`;
+                
+                if(isTaken) {
+                    let quality = "";
+                    if(score >= 20) quality = "💎 فوق‌العاده";
+                    else if(score >= 17) quality = "🥇 خیلی خوب";
+                    else if(score >= 12) quality = "🙂 خوب";
+                    else if(score >= 8) quality = "⚠️ قابل قبول";
+                    else quality = "⛔ نیاز به تلاش";
+
+                    const color = score >= 15 ? '#27ae60' : (score < 10 ? '#c0392b' : '#f39c12');
+                    
+                    div.innerHTML = `
+                        <div style="text-align:right">
+                            <h4>${ex.title}</h4>
+                            <small>انجام شده</small>
+                        </div>
+                        <div style="text-align:left">
+                            <span style="font-weight:bold; color:${color}; font-size:0.9rem;">${quality}</span><br>
+                            <button onclick="goToReview('${sId}')" style="background:none; border:none; color:#2980b9; cursor:pointer; font-size:0.8rem; padding:0; margin-top:5px;">🔍 مرور پاسخ‌ها</button>
+                        </div>`;
+                } else {
+                    const newBadge = ex.is_new ? '<div class="new-badge">جدید 🔥</div>' : '';
+                    div.innerHTML = `
+                        ${newBadge}
+                        <div><h4>${ex.title}</h4><small>${ex.time} دقیقه</small></div>
+                        <button class="btn-start" style="padding:5px 15px; border-radius:8px; border:none; cursor:pointer;" onclick="showIntro('${ex.id}')">شروع</button>`;
+                }
+                container.appendChild(div);
+            });
+        }
+
+        // --- منطق راهنما (Intro) ---
+        function showIntro(id) {
+            const ex = examsMap[id];
+            if(!ex) return;
+            if(ex.pass && prompt("رمز:") !== ex.pass) return alert("رمز اشتباه");
+            
+            document.getElementById('lobby').style.display = 'none';
+            document.getElementById('introCard').style.display = 'block';
+            
+            document.getElementById('introTitle').innerText = ex.title;
+            document.getElementById('introQCount').innerText = toPersianNum(ex.questions.length);
+            document.getElementById('introTime').innerText = toPersianNum(ex.time);
+            
+            const r = ex.rewards || { excellent: 300, good: 100, normal: 20 };
+            document.getElementById('rewEx').innerText = `${r.excellent} XP`;
+            document.getElementById('rewVg').innerText = `${r.good} XP`;
+            document.getElementById('rewNr').innerText = `${r.normal} XP`;
+            
+            currentExamId = id;
+        }
+
+        function startExamNow() {
+            startExam(currentExamId);
+        }
+
+        function startExam(id) {
+            const ex = examsMap[id];
+            currentExamId = id;
+            currentQuestions = ex.questions;
+            userAnswers = {};
+            currentQIndex = 0;
+            localStorage.setItem(EXAM_STATE_KEY, JSON.stringify({ id, start: Date.now(), end: Date.now() + ex.time*60000 }));
+            showExamUI(ex.time * 60);
+            SyncManager.addToQueue('report', { lesson: `آزمون: ${ex.title}`, status: 'شروع' });
+        }
+        
+        function checkActiveSession() {
+            const saved = localStorage.getItem(EXAM_STATE_KEY);
+            if(saved) {
+                const sess = JSON.parse(saved);
+                if(examsMap[sess.id]) {
+                    const remaining = Math.floor((sess.end - Date.now())/1000);
+                    if(remaining > 0) {
+                        if(confirm("یک آزمون ناتمام دارید. ادامه می‌دهید؟")) {
+                            currentExamId = sess.id;
+                            const ex = examsMap[sess.id];
+                            currentQuestions = ex.questions;
+                            userAnswers = {}; 
+                            currentQIndex = 0;
+                            showExamUI(remaining);
+                        } else { localStorage.removeItem(EXAM_STATE_KEY); }
+                    } else { localStorage.removeItem(EXAM_STATE_KEY); }
+                }
+            }
+        }
+
+        function showExamUI(time) {
+            document.getElementById('lobby').style.display = 'none';
+            document.getElementById('introCard').style.display = 'none';
+            document.getElementById('examArea').style.display = 'block';
+            let t = time;
+            timerInterval = setInterval(() => {
+                t--;
+                const m = Math.floor(t/60), s = t%60;
+                document.getElementById('timer').innerText = `${m}:${s<10?'0'+s:s}`;
+                if(t<=0) { clearInterval(timerInterval); alert("زمان تمام شد!"); finishExam(true); }
+            }, 1000);
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = currentQuestions[currentQIndex];
+            document.getElementById('qProgress').innerText = `سوال ${currentQIndex+1} از ${currentQuestions.length}`;
+            document.getElementById('questionText').innerText = q.q;
+            
+            const imgEl = document.getElementById('questionImage');
+            if(q.img) { imgEl.src = q.img; imgEl.style.display = 'block'; } else imgEl.style.display = 'none';
+            
+            const cont = document.getElementById('optionsContainer');
+            cont.innerHTML = '';
+            q.options.forEach((opt, i) => {
+                const val = i+1;
+                const div = document.createElement('div');
+                div.className = `option ${userAnswers[currentQIndex]==val ? 'selected' : ''}`;
+                
+                let content = opt;
+                if(opt.startsWith('http') || opt.startsWith('/uploads')) content = `<img src="${opt}" onclick="event.stopPropagation(); openLightbox(this.src)">`;
+                
+                div.innerHTML = `<b>${val})</b> ${content}`;
+                div.onclick = () => { userAnswers[currentQIndex] = val; loadQuestion(); }; 
+                cont.appendChild(div);
+            });
+
+            document.getElementById('btnNext').style.display = currentQIndex < currentQuestions.length-1 ? 'block' : 'none';
+            document.getElementById('btnFinish').style.display = currentQIndex === currentQuestions.length-1 ? 'block' : 'none';
+        }
+
+        function nextQuestion() { currentQIndex++; loadQuestion(); }
+
+        function finishExam(forced = false) {
+            clearInterval(timerInterval);
+            localStorage.removeItem(EXAM_STATE_KEY);
+
+            let correct = 0, wrong = 0, empty = 0;
+            let wrongIndices = [];
+
+            currentQuestions.forEach((q, i) => {
+                if(!userAnswers[i]) empty++;
+                else if(userAnswers[i] == q.correct) correct++;
+                else { wrong++; wrongIndices.push(i+1); }
+            });
+
+            const score = parseFloat(((correct / currentQuestions.length) * 20).toFixed(1));
+
+            const sId = String(currentExamId);
+            if(!RankSystem.data.exams) RankSystem.data.exams = {};
+            if(!RankSystem.data.exam_details) RankSystem.data.exam_details = {};
+            
+            // ثبت در حافظه محلی برای نمایش فوری
+            RankSystem.data.exams[sId] = score;
+            RankSystem.data.exam_details[sId] = {
+                score: score, wrong: wrongIndices, answers: userAnswers, date: new Date().toLocaleDateString('fa-IR')
+            };
+            RankSystem.saveToLocal(); 
+
+            // ارسال به سرور
+            SyncManager.addToQueue('claim_reward', {
+                reward_type: 'exam', reward_id: currentExamId, exam_score: score,
+                wrong_list: wrongIndices, user_answers: userAnswers
+            });
+            
+            updateLocalCreds(JSON.stringify(RankSystem.data));
+
+            showReportCard(score, correct, wrong, empty);
+        }
+
+        function showReportCard(score, correct, wrong, empty) {
+            document.getElementById('examArea').style.display = 'none';
+            document.getElementById('reportCard').style.display = 'block';
+
+            document.getElementById('resCorrect').innerText = correct;
+            document.getElementById('resWrong').innerText = wrong;
+            document.getElementById('resEmpty').innerText = empty;
+
+            setTimeout(() => { document.getElementById('scorePointer').style.left = ((score/20)*100) + '%'; }, 200);
+
+            let qText = "نیاز به تلاش"; 
+            let color = "#c0392b";
+            
+            const numScore = parseFloat(score);
+
+            // صدا زدن تابع جشن از فایل rank.js
+            if(numScore >= 20) { qText = "💎 فوق‌العاده"; color="#8e44ad"; if(typeof launchConfetti === 'function') launchConfetti(); }
+            else if(numScore >= 17) { qText = "🥇 خیلی خوب"; color="#2ecc71"; if(typeof launchConfetti === 'function') launchConfetti(); }
+            else if(numScore >= 12) { qText = "🙂 خوب"; color="#2980b9"; }
+            else if(numScore >= 8) { qText = "⚠️ قابل قبول"; color="#f1c40f"; }
+            
+            const qEl = document.getElementById('qualitativeScore');
+            qEl.innerText = qText; 
+            qEl.style.color = color;
+            
+            document.getElementById('btnReview').style.display = 'block';
+            document.getElementById('xpMsg').style.display = 'block';
+        }
+
+        function startReviewMode() {
+            document.getElementById('reportCard').style.display = 'none';
+            document.getElementById('reviewArea').style.display = 'block';
+            renderReview(currentQuestions, userAnswers);
+        }
+
+        function goToReview(id) {
+            window.location.href = `azmoon.html?mode=history_review&target=${id}`;
+        }
+
+        async function prepareReviewMode(targetId) {
+            if(!targetId) return;
+            document.getElementById('loading').innerText = "بازیابی پاسخ‌برگ...";
+            document.getElementById('loading').style.display = 'block';
+
+            const sTargetId = String(targetId);
+            let myData = (RankSystem.data.exam_details || {})[sTargetId];
+            
+            let examList = [];
+            try {
+                const resEx = await fetch(`${API_URL}?t=${Date.now()}`, { method: 'POST', headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'get_exams' }) });
+                const eData = await resEx.json();
+                examList = eData.data || [];
+            } catch(e) {}
+
+            const exam = examList.find(e => String(e.id) === sTargetId);
+
+            if(!myData) {
+                try {
+                     const resUser = await fetch(`${API_URL}?t=${Date.now()}`, { method: 'POST', headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'login', username: currentUser.username, password: currentUser.password }) });
+                     const userData = await resUser.json();
+                     if(userData.status === 'success') {
+                         RankSystem.init(userData.jsonData);
+                         myData = (RankSystem.data.exam_details || {})[sTargetId];
+                     }
+                } catch(e) {}
+            }
+
+            if(exam && myData) {
+                document.getElementById('lobby').style.display = 'none';
+                document.getElementById('reviewArea').style.display = 'block';
+                renderReview(exam.questions, myData.answers || {});
+            } else { 
+                alert("اطلاعات آزمون یافت نشد (احتمالاً حذف شده است)."); 
+                window.location.href = 'azmoon.html'; 
+            }
+        }
+
+        function renderReview(questions, answers) {
+            const c = document.getElementById('reviewContent');
+            c.innerHTML = '';
+            questions.forEach((q, i) => {
+                const uAns = answers[i];
+                const isCorrect = (uAns == q.correct);
+                let html = `<div class="review-q"><b>سوال ${i+1}:</b> ${q.q}`;
+                if(q.img) html += `<br><img src="${q.img}" onclick="openLightbox(this.src)">`;
+                
+                q.options.forEach((op, idx) => {
+                    const val = idx+1;
+                    let color = "#fff", border = "#eee";
+                    if(val == q.correct) { color = "#d4edda"; border = "#c3e6cb"; } 
+                    else if(val == uAns) { color = "#f8d7da"; border = "#f5c6cb"; } 
+                    
+                    let content = optIsImage(op) ? `<img src="${op}" style="max-height:100px; vertical-align:middle">` : op;
+                    html += `<div style="background:${color}; border:1px solid ${border}; padding:10px; margin:5px 0; border-radius:10px;">${val}) ${content}</div>`;
+                });
+                
+                if(q.desc || q.desc_img) {
+                    html += `<div style="background:#fff3cd; padding:10px; margin-top:10px; border-radius:8px; font-size:0.9rem;">💡 <b>توضیح:</b> ${q.desc || ''}`;
+                    if(q.desc_img) html += `<br><img src="${q.desc_img}" onclick="openLightbox(this.src)" style="max-width:100%; border-radius:8px; margin-top:5px;">`;
+                    html += `</div>`;
+                }
+                
+                html += `</div>`;
+                c.innerHTML += html;
+            });
+        }
+
+        function optIsImage(s) { return s.startsWith('http') || s.startsWith('/uploads'); }
+        function openLightbox(src) { document.getElementById('lightboxImg').src = src; document.getElementById('lightbox').style.display = 'flex'; }
+        
+        function toPersianNum(n) { return n.toString().replace(/\d/g, x => ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'][x]); }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
