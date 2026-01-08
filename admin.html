@@ -89,6 +89,8 @@
         .manage-input:focus { border-color: #3498db; outline: none; background: #f0f8ff; }
         
         .save-row-btn { background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; width: 45px; font-weight: bold; }
+        .save-row-btn:active { transform: scale(0.95); }
+        
         .del-row-btn { background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 45px; }
         .del-row-btn:hover { background: #c0392b; }
 
@@ -96,17 +98,17 @@
         .notif-input-area { background: #e8f4f8; padding: 15px; border-radius: 15px; border: 1px dashed #3498db; margin-bottom: 20px; }
         .notif-list-item { background: white; padding: 10px; margin-bottom: 10px; border-radius: 10px; border-right: 4px solid #3498db; display: flex; justify-content: space-between; align-items: center; }
 
-        /* 🆕 استایل‌های جدید برای بخش تکالیف (پوشه‌بندی و نمره) */
+        /* بخش تکالیف (پوشه‌بندی و نمره) */
         .folder-card { background: #fff; border: 1px solid #ddd; border-right: 5px solid #f39c12; margin-bottom: 10px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
         .folder-card:hover { transform: translateX(-5px); background: #fffdf9; }
 
-        .sub-card { background: white; border: 1px solid #eee; padding: 15px; border-radius: 12px; margin-bottom: 20px; border-right: 5px solid #bdc3c7; }
+        .sub-card { background: white; border: 1px solid #eee; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-right: 5px solid #bdc3c7; }
         .sub-card.pending { border-right-color: #e67e22; background: #fffdf9; }
         .sub-card.graded { border-right-color: #27ae60; }
         
         .breadcrumb { background: #e8f6f3; padding: 10px; border-radius: 8px; margin-bottom: 15px; color: #16a085; font-weight: bold; display: flex; align-items: center; cursor: pointer; }
 
-        /* پنل نمره‌دهی پیشرفته */
+        /* پنل نمره‌دهی */
         .grade-panel { background: #f9f9f9; padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px dashed #ccc; }
         .grade-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
         .g-btn { padding: 10px; border: none; border-radius: 8px; cursor: pointer; color: white; font-family: inherit; font-size: 0.9rem; transition: 0.2s; opacity: 0.7; }
@@ -121,7 +123,13 @@
         .feedback-tools { display: flex; gap: 10px; margin-top: 15px; align-items: center; background: white; padding: 10px; border-radius: 8px; border: 1px solid #eee; }
         .rec-btn { background: #e74c3c; color: white; width: 45px; height: 45px; border-radius: 50%; border: none; cursor: pointer; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         .rec-btn.recording { animation: pulse 1s infinite; background: red; box-shadow: 0 0 10px red; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        
+        .fb-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-top: 10px; font-family: inherit; box-sizing: border-box; }
+        audio { width: 100%; margin-top: 10px; height: 35px; }
+        
+        /* 🆕 لیست غایبین */
+        .missing-list { margin-top: 25px; padding-top: 15px; border-top: 2px dashed #ffcdd2; }
+        .missing-item { display: inline-block; background: #ffebee; color: #c0392b; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem; margin: 3px; border: 1px solid #ffcdd2; }
     </style>
 </head>
 <body>
@@ -292,7 +300,7 @@
     }
 
     function processData() {
-        renderFolders(); // 🆕 تابع جدید پوشه‌بندی
+        renderFolders(); 
         renderUsersList(ALL_USERS);
         renderLessonsStats();
         renderExamsStats();
@@ -308,7 +316,7 @@
         event.currentTarget.classList.add('active');
     }
 
-    // --- 🆕 بخش تکالیف: پوشه‌بندی ---
+    // --- بخش تکالیف: پوشه‌بندی و لیست غایبین ---
     function renderFolders() {
         const list = document.getElementById('hwFoldersList');
         list.innerHTML = '';
@@ -347,19 +355,22 @@
         const list = document.getElementById('hwStudentsList');
         list.innerHTML = '';
         
-        if(!hw.submissions || Object.keys(hw.submissions).length === 0) {
-            list.innerHTML = '<p style="text-align:center; color:#999;">هنوز کسی این تکلیف را نفرستاده است.</p>';
-            return;
+        // --- 1. لیست حاضرین (ارسال کرده‌ها) ---
+        const submittedUsernames = [];
+        const subs = [];
+        
+        if(hw.submissions) {
+            Object.keys(hw.submissions).forEach(u => {
+                submittedUsernames.push(u);
+                const s = hw.submissions[u];
+                const user = ALL_USERS.find(usr => usr.u === u);
+                subs.push({ username: u, name: user?user.n:u, ...s });
+            });
         }
 
-        const subs = [];
-        Object.keys(hw.submissions).forEach(u => {
-            const s = hw.submissions[u];
-            const user = ALL_USERS.find(usr => usr.u === u);
-            subs.push({ username: u, name: user?user.n:u, ...s });
-        });
-
         subs.sort((a,b) => (a.status==='pending' && b.status!=='pending') ? -1 : 1);
+
+        if(subs.length === 0) list.innerHTML = '<p style="text-align:center; color:#999;">هنوز کسی این تکلیف را نفرستاده است.</p>';
 
         subs.forEach(sub => {
             const isPending = sub.status === 'pending';
@@ -409,6 +420,24 @@
             `;
             list.appendChild(div);
         });
+
+        // --- 2. لیست غایبین (🆕 قابلیت جدید) ---
+        const missing = [];
+        ALL_USERS.forEach(u => {
+            if(!submittedUsernames.includes(u.u)) missing.push(u);
+        });
+
+        if(missing.length > 0) {
+            const missingDiv = document.createElement('div');
+            missingDiv.className = 'missing-list';
+            let html = `<h4 style="color:#c0392b; margin-bottom:10px;">❌ انجام نداده‌ها (${missing.length} نفر):</h4><div>`;
+            missing.forEach(u => {
+                html += `<span class="missing-item">${u.n}</span>`;
+            });
+            html += `</div>`;
+            missingDiv.innerHTML = html;
+            list.appendChild(missingDiv);
+        }
     }
 
     function selectGrade(btn, gradeText, xpVal, username) {
@@ -570,9 +599,12 @@
 
     async function performAdminOp(type, username, itemId) {
         let body = { action: 'admin_op', admin_token: ADMIN_TOKEN, target_user: username, op_type: type };
-        if(type === 'give_xp' || type === 'give_gem') { const amt = prompt("مقدار:"); if(!amt) return; body.amount = amt; }
-        else if(type === 'take_xp' || type === 'take_gem') { const amt = prompt("مقدار کسر را وارد کنید:"); if(!amt) return; body.amount = -1 * Math.abs(parseInt(amt)); body.op_type = (type === 'take_xp') ? 'give_xp' : 'give_gem'; }
-        else if(type.includes('reset') || type === 'ban_user') { if(!confirm("آیا مطمئن هستید؟")) return; if(type.includes('reset')) body[type === 'reset_exam' ? 'exam_id' : 'video_id'] = itemId; }
+        if(type === 'give_xp' || type === 'take_xp' || type === 'give_gem' || type === 'take_gem') { 
+            const amt = prompt("مقدار:"); if(!amt) return; 
+            body.amount = (type.includes('take') ? -1 : 1) * Math.abs(parseInt(amt)); 
+            if(type.includes('take')) body.op_type = type.replace('take', 'give');
+        }
+        else if(type.includes('reset') || type === 'ban_user') { if(!confirm("مطمئن هستید؟")) return; if(type.includes('reset')) body[type === 'reset_exam' ? 'exam_id' : 'video_id'] = itemId; }
         
         const res = await fetch(API_URL, { method: 'POST', headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
         const d = await res.json();
