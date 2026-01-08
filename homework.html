@@ -54,15 +54,15 @@
         .btn-photo { background: var(--info); box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3); }
         .btn-cancel { background: #95a5a6; }
 
-        /* فیدبک معلم (جدید) */
+        /* فیدبک معلم */
         .feedback-box { background: white; border: 2px solid var(--success); padding: 20px; border-radius: 15px; margin-top: 20px; display: none; width: 100%; box-sizing: border-box; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         .grade-badge { display: inline-block; padding: 8px 20px; border-radius: 20px; background: var(--success); color: white; font-weight: bold; font-size: 1.2rem; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); }
         
-        /* 🆕 استایل نمایش فایل ارسالی خود دانش‌آموز */
+        /* استایل نمایش فایل ارسالی خود دانش‌آموز */
         .my-submission-view { background: #f0f3f5; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #dfe6e9; }
         .sub-label { font-size: 0.85rem; color: #7f8c8d; margin-bottom: 8px; display: block; font-weight: bold; }
 
-        /* لایت باکس (زوم عکس) */
+        /* لایت باکس */
         #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; cursor: zoom-out; backdrop-filter: blur(5px); }
         #lightbox img { max-width: 95%; max-height: 95%; border-radius: 5px; box-shadow: 0 0 30px rgba(255,255,255,0.2); animation: zoomIn 0.3s; object-fit: contain; }
         @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -206,11 +206,10 @@
             });
         }
 
-        // --- ساخت لینک سالم (مهم برای حل مشکل ویس) ---
+        // تابع کمکی برای لینک‌های امن (جلوگیری از 404)
         function getSafeUrl(path) {
             if(!path) return '';
             if(path.startsWith('http')) return path;
-            // حذف اسلش اضافی از آخر API_URL و اول path
             let base = API_URL.replace(/\/$/, '');
             let rel = path.startsWith('/') ? path : '/' + path;
             return base + rel;
@@ -234,7 +233,6 @@
                 subArea.style.display = 'none';
                 fbContainer.style.display = 'block';
                 
-                // نمایش فایل ارسالی خود دانش‌آموز
                 myWorkContainer.style.display = 'block';
                 const myContent = document.getElementById('myWorkContent');
                 let myFileUrl = getSafeUrl(hw.my_status.file);
@@ -244,7 +242,6 @@
                 document.getElementById('fGrade').innerText = hw.my_status.grade;
                 document.getElementById('fText').innerText = hw.my_status.feedback || "بدون پیام.";
                 
-                // ویس معلم (با لینک سالم)
                 if(hw.my_status.teacher_voice) {
                     document.getElementById('fVoiceBox').style.display = 'block';
                     const audioEl = document.getElementById('fAudio');
@@ -252,7 +249,6 @@
                     audioEl.load();
                 } else document.getElementById('fVoiceBox').style.display = 'none';
 
-                // عکس معلم
                 if(hw.my_status.teacher_image) {
                     document.getElementById('fImageBox').style.display = 'block';
                     document.getElementById('fImage').src = getSafeUrl(hw.my_status.teacher_image);
@@ -341,32 +337,72 @@
             }
         }
 
+        // 🚀 تابع جدید: آپلود مستقیم و استاندارد (حل مشکل ویس و سرعت)
+        async function uploadFileToServer(fileBlob, type) {
+            const formData = new FormData();
+            // نام‌گذاری فایل برای ارسال (اگر Blob باشد نام ندارد)
+            if (fileBlob instanceof Blob && !fileBlob.name) {
+                const ext = type === 'voice' ? 'webm' : 'jpg';
+                formData.append('file', fileBlob, `upload.${ext}`);
+            } else {
+                formData.append('file', fileBlob);
+            }
+            formData.append('type', type);
+
+            const res = await fetch(`${API_URL}/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            if(data.status === 'success') return data.url;
+            throw new Error('Upload Failed');
+        }
+
         async function uploadVoice() {
             if(!audioBlob) return;
-            const reader = new FileReader(); reader.readAsDataURL(audioBlob);
-            reader.onloadend = () => performSubmit(reader.result, 'voice.webm', 'voice');
+            document.getElementById('loading').style.display = 'flex';
+            try {
+                // 1. اول آپلود می‌کنیم و لینک می‌گیریم
+                const fileUrl = await uploadFileToServer(audioBlob, 'voice');
+                // 2. لینک را ثبت می‌کنیم
+                await finalSubmit(fileUrl, 'voice');
+            } catch(e) { alert("خطا در آپلود ویس. لطفاً دوباره تلاش کنید."); }
+            document.getElementById('loading').style.display = 'none';
         }
 
         async function uploadImage() {
             if(!selectedImageFile) return;
-            const reader = new FileReader(); reader.readAsDataURL(selectedImageFile);
-            reader.onloadend = () => performSubmit(reader.result, selectedImageFile.name, 'image');
+            document.getElementById('loading').style.display = 'flex';
+            try {
+                const fileUrl = await uploadFileToServer(selectedImageFile, 'image');
+                await finalSubmit(fileUrl, 'image');
+            } catch(e) { alert("خطا در آپلود عکس."); }
+            document.getElementById('loading').style.display = 'none';
         }
 
-        async function performSubmit(fileData, fileName, type) {
-            document.getElementById('loading').style.display = 'flex';
+        async function finalSubmit(fileUrl, type) {
             const user = JSON.parse(localStorage.getItem('chamran_db_vfinal_creds'));
             try {
-                const upRes = await fetch(API_URL, { method: 'POST', headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'upload_file', file_data: fileData, file_name: fileName, hw_type: type, username: user.username }) });
-                const upData = await upRes.json();
-                if(upData.status === 'success') {
-                    const subRes = await fetch(API_URL, { method: 'POST', headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'submit_homework', username: user.username, password: user.password, hw_id: currentHwId, link: upData.url, hw_type: type }) });
-                    const subData = await subRes.json();
-                    if(subData.status === 'success') { alert("✅ ارسال شد!"); closeDetail(); fetchHomeworks(); } 
-                    else { alert("خطا در ثبت"); }
-                } else { alert("خطا در آپلود"); }
+                const subRes = await fetch(API_URL, { 
+                    method: 'POST', 
+                    headers: { "Content-Type": "application/json" }, 
+                    body: JSON.stringify({ 
+                        action: 'submit_homework', 
+                        username: user.username, 
+                        password: user.password, 
+                        hw_id: currentHwId, 
+                        file_url: fileUrl, // ارسال لینک فایل آپلود شده
+                        hw_type: type 
+                    }) 
+                });
+                const subData = await subRes.json();
+                if(subData.status === 'success') { 
+                    alert("✅ ارسال شد!"); 
+                    closeDetail(); 
+                    fetchHomeworks(); 
+                } 
+                else { alert("خطا در ثبت نهایی"); }
             } catch(e) { alert("خطای شبکه"); }
-            document.getElementById('loading').style.display = 'none';
         }
     </script>
 </body>
