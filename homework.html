@@ -6,7 +6,7 @@
     <title>دفتر مشق و تکالیف 📝</title>
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" />
     <style>
-        :root { --primary: #2c3e50; --accent: #e67e22; --bg: #ecf0f1; --success: #27ae60; --danger: #c0392b; --info: #3498db; }
+        :root { --primary: #2c3e50; --accent: #e67e22; --bg: #ecf0f1; --success: #27ae60; --danger: #c0392b; --info: #3498db; --wait: #f39c12; }
         body { font-family: 'Vazirmatn', sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; user-select: none; -webkit-tap-highlight-color: transparent; }
 
         /* کارت‌های اصلی */
@@ -17,18 +17,17 @@
         .back-btn { position: absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 35px; height: 35px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         /* لیست تکالیف */
-        .hw-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 2px solid #eee; border-radius: 15px; margin-bottom: 10px; cursor: pointer; background: white; transition: 0.2s; }
+        .hw-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 2px solid #eee; border-radius: 15px; margin-bottom: 10px; cursor: pointer; background: white; transition: 0.2s; position: relative; }
         .hw-item.done { border-color: var(--success); background: #f0fdf4; }
         .hw-item.pending { border-color: var(--accent); background: #fdf5e6; }
         
         .badge { padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; color: white; font-weight: bold; }
         .b-new { background: var(--danger); animation: pulse 1.5s infinite; }
         .b-done { background: var(--success); }
-        .b-wait { background: var(--accent); }
-        
+        .b-wait { background: var(--wait); }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
 
-        /* صفحه جزئیات (مودال تمام صفحه) */
+        /* صفحه جزئیات */
         #detailPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; display: none; flex-direction: column; overflow-y: auto; padding: 20px; box-sizing: border-box; align-items: center; }
         
         .desc-box { background: #fff8e1; border: 1px dashed #f1c40f; padding: 15px; border-radius: 12px; margin-bottom: 20px; line-height: 1.6; font-size: 0.95rem; width: 100%; box-sizing: border-box; }
@@ -40,7 +39,6 @@
         @keyframes ripple { 0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); } 100% { box-shadow: 0 0 0 20px rgba(231, 76, 60, 0); } }
         
         .timer { font-size: 1.5rem; font-weight: bold; margin-top: 10px; color: var(--primary); font-family: monospace; }
-        
         .preview-box { display: none; margin-top: 15px; }
         .audio-player { width: 100%; margin-top: 10px; }
 
@@ -50,9 +48,16 @@
         .btn-photo { background: var(--info); box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3); }
         .btn-cancel { background: #95a5a6; }
 
-        /* فیدبک معلم */
-        .feedback-box { background: white; border-right: 5px solid var(--success); padding: 15px; border-radius: 12px; margin-top: 20px; display: none; width: 100%; box-sizing: border-box; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        /* فیدبک معلم (جدید) */
+        .feedback-box { background: white; border: 2px solid var(--success); padding: 15px; border-radius: 12px; margin-top: 20px; display: none; width: 100%; box-sizing: border-box; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .grade-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; background: var(--success); color: white; font-weight: bold; font-size: 1.1rem; margin-bottom: 10px; }
         
+        /* لایت باکس (زوم عکس) */
+        #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; cursor: zoom-out; backdrop-filter: blur(5px); }
+        #lightbox img { max-width: 95%; max-height: 95%; border-radius: 5px; box-shadow: 0 0 30px rgba(255,255,255,0.2); animation: zoomIn 0.3s; object-fit: contain; }
+        @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .thumb-img { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; border: 2px solid #eee; cursor: zoom-in; margin-top: 10px; }
+
         #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 2000; display: flex; justify-content: center; align-items: center; flex-direction: column; font-weight: bold; color: var(--primary); }
     </style>
 </head>
@@ -61,6 +66,10 @@
     <div id="loading">
         <div style="font-size:2rem; margin-bottom:10px;">⏳</div>
         درحال بارگذاری...
+    </div>
+
+    <div id="lightbox" onclick="this.style.display='none'">
+        <img id="lightboxImg" src="">
     </div>
 
     <div class="card header-card">
@@ -85,16 +94,25 @@
             </div>
 
             <div id="feedbackContainer" class="feedback-box">
-                <div style="font-weight:bold; color:var(--success); font-size:1.1rem; margin-bottom:5px;">✅ نمره داده شد!</div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                    <span>نتیجه: <b id="fGrade">عالی</b></span>
+                <div style="text-align:center;">
+                    <div id="fGrade" class="grade-badge">عالی</div>
                 </div>
-                <p id="fText" style="color:#555; font-size:0.9rem; margin:0; background:#f9f9f9; padding:10px; border-radius:8px;">...</p>
+                <div style="background:#f9f9f9; padding:10px; border-radius:10px; border-right:3px solid var(--info); margin-bottom:10px;">
+                    <b>✍️ نظر معلم:</b> <span id="fText" style="color:#555;">...</span>
+                </div>
+                <div id="fVoiceBox" style="display:none; margin-top:10px;">
+                    <div style="font-size:0.9rem; margin-bottom:5px;">🔊 پیام صوتی معلم:</div>
+                    <audio id="fAudio" controls class="audio-player"></audio>
+                </div>
+                <div id="fImageBox" style="display:none; margin-top:10px;">
+                    <div style="font-size:0.9rem; margin-bottom:5px;">🖼️ تصویر ضمیمه معلم:</div>
+                    <img id="fImage" class="thumb-img" onclick="openLightbox(this.src)">
+                </div>
             </div>
 
             <div id="submissionArea">
                 <div class="recorder-box">
-                    <div id="recStatus" style="margin-bottom:15px; color:#7f8c8d;">برای ضبط صدا دکمه را نگه دارید</div>
+                    <div id="recStatus" style="margin-bottom:15px; color:#7f8c8d;">برای ضبط صدا دکمه را بزنید</div>
                     
                     <button id="micBtn" class="mic-btn">🎙️</button>
                     <div id="timerDisplay" class="timer">00:00</div>
@@ -112,7 +130,7 @@
                 <input type="file" id="imgInput" accept="image/*" style="display:none" onchange="handleImage(this)">
                 
                 <div id="imgPreviewBox" style="display:none; margin-top:15px; text-align:center;">
-                    <img id="imgPreview" src="" style="max-width:100%; border-radius:10px; border:2px solid #ddd;">
+                    <img id="imgPreview" class="thumb-img" onclick="openLightbox(this.src)">
                     <button onclick="uploadImage()" class="action-btn btn-send" style="margin-top:10px;">📤 ارسال عکس</button>
                 </div>
             </div>
@@ -120,29 +138,27 @@
     </div>
 
     <script src="config.js"></script>
-    <script src="rank.js"></script>
-
     <script>
+        const API_URL = APP_CONFIG.API_URL;
         let currentHwId = null;
         let mediaRecorder;
         let audioChunks = [];
         let audioBlob = null;
         let timerInterval;
         let selectedImageFile = null;
+        let isRecording = false;
 
-        // --- 1. دریافت لیست تکالیف ---
         window.addEventListener('load', () => {
             fetchHomeworks();
         });
 
         async function fetchHomeworks() {
-            // استفاده از لاگین ذخیره شده
             const saved = localStorage.getItem('chamran_db_vfinal_creds');
             if(!saved) { window.location.href = 'index.html'; return; }
             const user = JSON.parse(saved);
 
             try {
-                const res = await fetch(SERVER_URL, {
+                const res = await fetch(API_URL, {
                     method: 'POST', headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ action: 'get_homeworks', username: user.username })
                 });
@@ -154,7 +170,7 @@
                     document.getElementById('hwListContainer').innerHTML = '<p style="text-align:center">خطا در دریافت اطلاعات</p>';
                 }
             } catch(e) {
-                alert("خطا در اتصال به سرور");
+                // alert("خطا در اتصال به سرور");
             }
             document.getElementById('loading').style.display = 'none';
         }
@@ -168,7 +184,6 @@
                 return;
             }
 
-            // مرتب‌سازی (جدیدترین بالا)
             list.reverse().forEach(hw => {
                 let statusClass = '';
                 let badgeHtml = '';
@@ -177,12 +192,12 @@
                 if(hw.my_status) {
                     if(hw.my_status.status === 'graded') {
                         statusClass = 'done';
-                        badgeHtml = '<span class="badge b-done">نمره: ' + (hw.my_status.grade || 'ثبت شده') + '</span>';
-                        statusText = 'تکمیل شده';
+                        badgeHtml = '<span class="badge b-done">' + (hw.my_status.grade || 'ثبت شده') + '</span>';
+                        statusText = 'نمره داده شد ✅';
                     } else {
                         statusClass = 'pending';
-                        badgeHtml = '<span class="badge b-wait">در حال بررسی</span>';
-                        statusText = 'ارسال شده';
+                        badgeHtml = '<span class="badge b-wait">ارسال شده</span>';
+                        statusText = 'منتظر بررسی ⏳';
                     }
                 } else {
                     badgeHtml = '<span class="badge b-new">جدید</span>';
@@ -205,7 +220,6 @@
             });
         }
 
-        // --- 2. مدیریت جزئیات ---
         function openDetail(hw) {
             currentHwId = hw.id;
             document.getElementById('detailPage').style.display = 'flex';
@@ -216,27 +230,36 @@
             const subArea = document.getElementById('submissionArea');
             const fbContainer = document.getElementById('feedbackContainer');
 
-            // ریست کردن فرم‌ها
             resetRecorder();
             document.getElementById('imgPreviewBox').style.display = 'none';
             selectedImageFile = null;
 
             if(hw.my_status && hw.my_status.status === 'graded') {
-                // اگر نمره داده شده، فرم ارسال مخفی شود
                 subArea.style.display = 'none';
                 fbContainer.style.display = 'block';
                 document.getElementById('fGrade').innerText = hw.my_status.grade;
                 document.getElementById('fText').innerText = hw.my_status.feedback || "بدون پیام";
-            } else if (hw.my_status && hw.my_status.status === 'pending') {
-                // اگر ارسال شده ولی هنوز نمره نگرفته
-                subArea.style.display = 'block'; // اجازه ارسال مجدد (ویرایش)
-                fbContainer.style.display = 'none';
-                document.getElementById('recStatus').innerText = "✅ قبلاً فایل ارسال کردید (ارسال مجدد جایگزین می‌شود)";
+                
+                // نمایش ویس معلم
+                if(hw.my_status.teacher_voice) {
+                    document.getElementById('fVoiceBox').style.display = 'block';
+                    document.getElementById('fAudio').src = API_URL + hw.my_status.teacher_voice;
+                } else document.getElementById('fVoiceBox').style.display = 'none';
+
+                // نمایش عکس معلم
+                if(hw.my_status.teacher_image) {
+                    document.getElementById('fImageBox').style.display = 'block';
+                    document.getElementById('fImage').src = API_URL + hw.my_status.teacher_image;
+                } else document.getElementById('fImageBox').style.display = 'none';
+
             } else {
-                // هنوز ارسال نشده
                 subArea.style.display = 'block';
                 fbContainer.style.display = 'none';
-                document.getElementById('recStatus').innerText = "برای ضبط صدا دکمه را بزنید";
+                if (hw.my_status && hw.my_status.status === 'pending') {
+                    document.getElementById('recStatus').innerText = "✅ قبلاً فایل ارسال کردید (ارسال مجدد جایگزین می‌شود)";
+                } else {
+                    document.getElementById('recStatus').innerText = "برای ضبط صدا دکمه را بزنید";
+                }
             }
         }
 
@@ -245,13 +268,13 @@
             if(mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
         }
 
-        // --- 3. ضبط صدا (Voice Recorder) ---
+        // --- ضبط صدا (با کلیک، نه نگه داشتن) ---
         const micBtn = document.getElementById('micBtn');
         const timerDisplay = document.getElementById('timerDisplay');
         let startTime;
 
         micBtn.addEventListener('click', async () => {
-            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+            if (!isRecording) {
                 startRecording();
             } else {
                 stopRecording();
@@ -267,20 +290,22 @@
                 mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
                 
                 mediaRecorder.onstop = () => {
-                    audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); // فرمت استاندارد وب
+                    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                     const audioUrl = URL.createObjectURL(audioBlob);
-                    const player = document.getElementById('audioPlayer');
-                    player.src = audioUrl;
+                    document.getElementById('audioPlayer').src = audioUrl;
                     
                     document.getElementById('micBtn').style.display = 'none';
                     document.getElementById('timerDisplay').style.display = 'none';
                     document.getElementById('audioPreview').style.display = 'block';
                     
                     clearInterval(timerInterval);
+                    isRecording = false;
                 };
 
                 mediaRecorder.start();
+                isRecording = true;
                 micBtn.classList.add('recording');
+                document.getElementById('recStatus').innerText = "درحال ضبط... (برای توقف کلیک کنید)";
                 startTime = Date.now();
                 
                 timerInterval = setInterval(() => {
@@ -303,15 +328,17 @@
         function resetRecorder() {
             audioBlob = null;
             audioChunks = [];
+            isRecording = false;
             document.getElementById('micBtn').style.display = 'flex';
             document.getElementById('micBtn').classList.remove('recording');
             document.getElementById('timerDisplay').style.display = 'block';
             document.getElementById('timerDisplay').innerText = "00:00";
             document.getElementById('audioPreview').style.display = 'none';
+            document.getElementById('recStatus').innerText = "برای ضبط صدا دکمه را بزنید";
             if(timerInterval) clearInterval(timerInterval);
         }
 
-        // --- 4. آپلود عکس ---
+        // --- عکس و لایت باکس ---
         function handleImage(input) {
             if (input.files && input.files[0]) {
                 selectedImageFile = input.files[0];
@@ -324,57 +351,43 @@
             }
         }
 
-        // --- 5. ارسال نهایی به سرور ---
+        function openLightbox(src) {
+            document.getElementById('lightboxImg').src = src;
+            document.getElementById('lightbox').style.display = 'flex';
+        }
+
+        // --- ارسال ---
         async function uploadVoice() {
             if(!audioBlob) return;
             const reader = new FileReader();
             reader.readAsDataURL(audioBlob);
-            reader.onloadend = () => {
-                const base64data = reader.result;
-                performSubmit(base64data, 'voice.webm', 'voice');
-            }
+            reader.onloadend = () => performSubmit(reader.result, 'voice.webm', 'voice');
         }
 
         async function uploadImage() {
             if(!selectedImageFile) return;
             const reader = new FileReader();
             reader.readAsDataURL(selectedImageFile);
-            reader.onloadend = () => {
-                const base64data = reader.result;
-                performSubmit(base64data, selectedImageFile.name, 'image');
-            }
+            reader.onloadend = () => performSubmit(reader.result, selectedImageFile.name, 'image');
         }
 
         async function performSubmit(fileData, fileName, type) {
             document.getElementById('loading').style.display = 'flex';
             const user = JSON.parse(localStorage.getItem('chamran_db_vfinal_creds'));
 
-            // 1. آپلود فایل
             try {
-                const upRes = await fetch(SERVER_URL, {
+                // 1. آپلود
+                const upRes = await fetch(API_URL, {
                     method: 'POST', headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                        action: 'upload_file', 
-                        file_data: fileData, 
-                        file_name: fileName,
-                        hw_type: type, // برای پوشه‌بندی در سرور
-                        username: user.username 
-                    })
+                    body: JSON.stringify({ action: 'upload_file', file_data: fileData, file_name: fileName, hw_type: type, username: user.username })
                 });
                 const upData = await upRes.json();
 
                 if(upData.status === 'success') {
-                    // 2. ثبت در دیتابیس
-                    const subRes = await fetch(SERVER_URL, {
+                    // 2. ثبت
+                    const subRes = await fetch(API_URL, {
                         method: 'POST', headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ 
-                            action: 'submit_homework', 
-                            username: user.username, 
-                            password: user.password,
-                            hw_id: currentHwId,
-                            link: upData.url,
-                            hw_type: type
-                        })
+                        body: JSON.stringify({ action: 'submit_homework', username: user.username, password: user.password, hw_id: currentHwId, link: upData.url, hw_type: type })
                     });
                     const subData = await subRes.json();
                     
@@ -388,7 +401,6 @@
             } catch(e) { alert("خطای شبکه"); }
             document.getElementById('loading').style.display = 'none';
         }
-
     </script>
 </body>
 </html>
