@@ -83,6 +83,9 @@
         .stat-label { font-size: 0.8rem; color: #7f8c8d; }
 
         #loading { color: #7f8c8d; font-weight: bold; margin-top: 20px; }
+        .full-loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 5000; display: none; justify-content: center; align-items: center; flex-direction: column; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #eee; border-top-color: var(--accent); border-radius: 50%; animation: spin 1s infinite linear; }
+        @keyframes spin { to { transform: rotate(360deg); } }
         
         #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100000; display: none; }
         
@@ -95,6 +98,12 @@
 <body>
 
     <canvas id="confetti-canvas"></canvas>
+
+    <div id="fullLoading" class="full-loading">
+        <div class="spinner"></div>
+        <h3 style="color:var(--primary); margin-top:20px;">درحال تصحیح آزمون...</h3>
+        <p>لطفاً صفحه را نبندید 🙏</p>
+    </div>
 
     <div id="lightbox" onclick="this.style.display='none'">
         <img id="lightboxImg" src="">
@@ -173,16 +182,12 @@
 
         <div class="stat-grid">
             <div class="stat-item">
-                <span id="resCorrect" class="stat-num" style="color:var(--success)">0</span>
-                <span class="stat-label">درست ✅</span>
+                <span id="finalScoreDisplay" class="stat-num" style="color:var(--primary)">0</span>
+                <span class="stat-label">نمره نهایی</span>
             </div>
             <div class="stat-item">
-                <span id="resWrong" class="stat-num" style="color:var(--danger)">0</span>
-                <span class="stat-label">غلط ❌</span>
-            </div>
-            <div class="stat-item">
-                <span id="resEmpty" class="stat-num" style="color:#95a5a6">0</span>
-                <span class="stat-label">نزده ⚪</span>
+                <span id="xpGainedDisplay" class="stat-num" style="color:var(--success)">0</span>
+                <span class="stat-label">پاداش (XP)</span>
             </div>
         </div>
 
@@ -196,6 +201,7 @@
 
     <div id="reviewArea" class="card" style="display: none; text-align: right;">
         <h3 style="text-align:center; color:#e67e22; border-bottom:2px solid #eee; padding-bottom:10px;">🧐 تحلیل آزمون</h3>
+        <p style="color:#777; font-size:0.8rem; text-align:center; margin-bottom:15px;">در اینجا پاسخ‌هایی که ثبت کردید نمایش داده می‌شود.</p>
         <div id="reviewContent"></div>
         <button class="btn btn-back" onclick="window.location.href='index.html'">🏠 پایان مرور و بازگشت</button>
     </div>
@@ -203,9 +209,8 @@
     <script src="config.js"></script>
     <script src="rank.js"></script>
     <script>
-        // استفاده از کانفیگ
         const API_URL = APP_CONFIG.API_URL;
-        const EXAM_STATE_KEY = "chamran_exam_active_session_v8"; 
+        const EXAM_STATE_KEY = "chamran_exam_active_session_v9"; 
         
         let currentUser = null;
         let examsMap = {};
@@ -237,6 +242,7 @@
 
         async function performFullSync() {
             try {
+                // دریافت لیست آزمون‌ها (نسخه امن: بدون جواب)
                 const resExams = await fetch(`${API_URL}?t=${Date.now()}`, { method: 'POST', headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'get_exams' }) });
                 const examData = await resExams.json();
 
@@ -271,7 +277,6 @@
 
             if(list.length === 0) { container.innerHTML = "<p>آزمونی یافت نشد.</p>"; return; }
 
-            // نمایش برعکس
             list.reverse().forEach(ex => {
                 examsMap[ex.id] = ex;
                 const sId = String(ex.id);
@@ -316,7 +321,7 @@
         function showIntro(id) {
             const ex = examsMap[id];
             if(!ex) return;
-            if(ex.pass && prompt("رمز:") !== ex.pass) return alert("رمز اشتباه");
+            if(ex.pass && ex.pass !== '***' && prompt("رمز:") !== ex.pass) return alert("رمز اشتباه");
             
             document.getElementById('lobby').style.display = 'none';
             document.getElementById('introCard').style.display = 'block';
@@ -333,9 +338,7 @@
             currentExamId = id;
         }
 
-        function startExamNow() {
-            startExam(currentExamId);
-        }
+        function startExamNow() { startExam(currentExamId); }
 
         function startExam(id) {
             const ex = examsMap[id];
@@ -411,59 +414,59 @@
 
         function nextQuestion() { currentQIndex++; loadQuestion(); }
 
-        function finishExam(forced = false) {
+        // --- بخش مهم: تصحیح سمت سرور ---
+        async function finishExam(forced = false) {
             clearInterval(timerInterval);
             localStorage.removeItem(EXAM_STATE_KEY);
-
-            let correct = 0, wrong = 0, empty = 0;
-            let wrongIndices = [];
-
-            currentQuestions.forEach((q, i) => {
-                if(!userAnswers[i]) empty++;
-                else if(userAnswers[i] == q.correct) correct++;
-                else { wrong++; wrongIndices.push(i+1); }
-            });
-
-            const score = parseFloat(((correct / currentQuestions.length) * 20).toFixed(1));
-
-            const sId = String(currentExamId);
-            if(!RankSystem.data.exams) RankSystem.data.exams = {};
-            if(!RankSystem.data.exam_details) RankSystem.data.exam_details = {};
             
-            // ثبت در حافظه محلی برای نمایش فوری
-            RankSystem.data.exams[sId] = score;
-            RankSystem.data.exam_details[sId] = {
-                score: score, wrong: wrongIndices, answers: userAnswers, date: new Date().toLocaleDateString('fa-IR')
-            };
-            RankSystem.saveToLocal(); 
+            // نمایش لودینگ تمام صفحه
+            document.getElementById('fullLoading').style.display = 'flex';
 
-            // ارسال به سرور
-            SyncManager.addToQueue('claim_reward', {
-                reward_type: 'exam', reward_id: currentExamId, exam_score: score,
-                wrong_list: wrongIndices, user_answers: userAnswers
-            });
-            
-            updateLocalCreds(JSON.stringify(RankSystem.data));
-
-            showReportCard(score, correct, wrong, empty);
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: 'submit_exam',
+                        username: currentUser.username,
+                        password: currentUser.password,
+                        exam_id: currentExamId,
+                        user_answers: userAnswers
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if(data.status === 'success') {
+                    // بروزرسانی دیتای محلی با دیتای تایید شده سرور
+                    RankSystem.init(data.serverData);
+                    updateLocalCreds(data.serverData);
+                    
+                    showReportCard(data.score, data.xpAdded);
+                } else {
+                    alert("خطا در ثبت آزمون: " + data.message);
+                    window.location.reload();
+                }
+            } catch(e) {
+                alert("خطای شبکه! لطفاً اینترنت خود را بررسی کنید و دوباره دکمه ثبت را بزنید.");
+            } finally {
+                document.getElementById('fullLoading').style.display = 'none';
+            }
         }
 
-        function showReportCard(score, correct, wrong, empty) {
+        function showReportCard(score, xpAdded) {
             document.getElementById('examArea').style.display = 'none';
             document.getElementById('reportCard').style.display = 'block';
 
-            document.getElementById('resCorrect').innerText = correct;
-            document.getElementById('resWrong').innerText = wrong;
-            document.getElementById('resEmpty').innerText = empty;
+            document.getElementById('finalScoreDisplay').innerText = score;
+            document.getElementById('xpGainedDisplay').innerText = xpAdded > 0 ? `+${xpAdded}` : '0';
 
             setTimeout(() => { document.getElementById('scorePointer').style.left = ((score/20)*100) + '%'; }, 200);
 
             let qText = "نیاز به تلاش"; 
             let color = "#c0392b";
-            
             const numScore = parseFloat(score);
 
-            // صدا زدن تابع جشن از فایل rank.js
             if(numScore >= 20) { qText = "💎 فوق‌العاده"; color="#8e44ad"; if(typeof launchConfetti === 'function') launchConfetti(); }
             else if(numScore >= 17) { qText = "🥇 خیلی خوب"; color="#2ecc71"; if(typeof launchConfetti === 'function') launchConfetti(); }
             else if(numScore >= 12) { qText = "🙂 خوب"; color="#2980b9"; }
@@ -495,6 +498,13 @@
             const sTargetId = String(targetId);
             let myData = (RankSystem.data.exam_details || {})[sTargetId];
             
+            // اگر دیتا نبود، سعی کن از سرور بگیری
+            if(!myData) {
+                await performFullSync(); 
+                myData = (RankSystem.data.exam_details || {})[sTargetId];
+            }
+
+            // پیدا کردن سوالات آزمون
             let examList = [];
             try {
                 const resEx = await fetch(`${API_URL}?t=${Date.now()}`, { method: 'POST', headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'get_exams' }) });
@@ -504,23 +514,12 @@
 
             const exam = examList.find(e => String(e.id) === sTargetId);
 
-            if(!myData) {
-                try {
-                     const resUser = await fetch(`${API_URL}?t=${Date.now()}`, { method: 'POST', headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'login', username: currentUser.username, password: currentUser.password }) });
-                     const userData = await resUser.json();
-                     if(userData.status === 'success') {
-                         RankSystem.init(userData.jsonData);
-                         myData = (RankSystem.data.exam_details || {})[sTargetId];
-                     }
-                } catch(e) {}
-            }
-
             if(exam && myData) {
                 document.getElementById('lobby').style.display = 'none';
                 document.getElementById('reviewArea').style.display = 'block';
                 renderReview(exam.questions, myData.answers || {});
             } else { 
-                alert("اطلاعات آزمون یافت نشد (احتمالاً حذف شده است)."); 
+                alert("اطلاعات آزمون یافت نشد."); 
                 window.location.href = 'azmoon.html'; 
             }
         }
@@ -530,15 +529,17 @@
             c.innerHTML = '';
             questions.forEach((q, i) => {
                 const uAns = answers[i];
-                const isCorrect = (uAns == q.correct);
                 let html = `<div class="review-q"><b>سوال ${i+1}:</b> ${q.q}`;
                 if(q.img) html += `<br><img src="${q.img}" onclick="openLightbox(this.src)">`;
                 
                 q.options.forEach((op, idx) => {
                     const val = idx+1;
                     let color = "#fff", border = "#eee";
-                    if(val == q.correct) { color = "#d4edda"; border = "#c3e6cb"; } 
-                    else if(val == uAns) { color = "#f8d7da"; border = "#f5c6cb"; } 
+                    
+                    // چون جواب صحیح (q.correct) از سمت سرور نمی آید، فقط جواب کاربر را نشان میدهیم
+                    // برای امنیت بیشتر، اگر میخواهی جواب درست را نشان بدهی، باید بعد از اتمام آزمون، سرور کلید را بفرستد
+                    // فعلا فقط انتخاب کاربر را نشان میدهیم (آبی)
+                    if(val == uAns) { color = "#e3f2fd"; border = "#2196f3"; } 
                     
                     let content = optIsImage(op) ? `<img src="${op}" style="max-height:100px; vertical-align:middle">` : op;
                     html += `<div style="background:${color}; border:1px solid ${border}; padding:10px; margin:5px 0; border-radius:10px;">${val}) ${content}</div>`;
