@@ -45,10 +45,10 @@
         
         .timer { font-size: 1.5rem; font-weight: bold; margin-top: 10px; color: var(--primary); font-family: monospace; }
         .preview-box { display: none; margin-top: 15px; }
-        .audio-player { width: 100%; margin-top: 10px; height: 40px; }
+        .audio-player { width: 100%; margin-top: 10px; height: 45px; border-radius: 25px; background: #f1f3f4; }
 
         /* دکمه‌ها */
-        .action-btn { width: 100%; padding: 15px; border: none; border-radius: 15px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
+        .action-btn { width: 100%; padding: 15px; border: none; border-radius: 15px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; color: white; }
         .action-btn:active { transform: scale(0.98); }
         .btn-send { background: var(--success); box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3); }
         .btn-photo { background: var(--info); box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3); }
@@ -86,7 +86,7 @@
     <div class="card header-card">
         <button class="back-btn" onclick="window.location.href='index.html'">↩️</button>
         <h2 style="margin:0;">دفتر مشق 📝</h2>
-        <p style="font-size:0.9rem; opacity:0.9; margin-top:5px;">تکالیف خود را اینجا ارسال کنید</p>
+        <p style="font-size:0.9rem; opacity:0.9; margin-top:5px;">تکالیف خود را اینجا ببینید و انجام دهید</p>
     </div>
 
     <div id="hwListContainer" style="width: 100%; max-width: 500px;"></div>
@@ -132,22 +132,17 @@
             <div id="submissionArea">
                 <div class="recorder-box">
                     <div id="recStatus" style="margin-bottom:15px; color:#7f8c8d;">برای ضبط صدا دکمه را بزنید</div>
-                    
                     <button id="micBtn" class="mic-btn">🎙️</button>
                     <div id="timerDisplay" class="timer">00:00</div>
-
                     <div id="audioPreview" class="preview-box">
                         <audio id="audioPlayer" controls class="audio-player"></audio>
                         <button onclick="resetRecorder()" style="background:none; border:none; color:var(--danger); cursor:pointer; margin-top:10px; font-size:0.9rem;">🗑️ حذف و ضبط مجدد</button>
                         <button onclick="uploadVoice()" class="action-btn btn-send">📤 ارسال ویس</button>
                     </div>
                 </div>
-
                 <div style="text-align:center; color:#aaa; margin:10px 0;">--- یا ---</div>
-
                 <button onclick="document.getElementById('imgInput').click()" class="action-btn btn-photo">📷 ارسال عکس از گالری</button>
                 <input type="file" id="imgInput" accept="image/*" style="display:none" onchange="handleImage(this)">
-                
                 <div id="imgPreviewBox" style="display:none; margin-top:15px; text-align:center;">
                     <img id="imgPreview" class="thumb-img" onclick="openLightbox(this.src)">
                     <button onclick="uploadImage()" class="action-btn btn-send" style="margin-top:10px;">📤 ارسال عکس</button>
@@ -167,9 +162,7 @@
         let selectedImageFile = null;
         let isRecording = false;
 
-        window.addEventListener('load', () => {
-            fetchHomeworks();
-        });
+        window.addEventListener('load', () => { fetchHomeworks(); });
 
         async function fetchHomeworks() {
             const saved = localStorage.getItem('chamran_db_vfinal_creds');
@@ -177,32 +170,18 @@
             const user = JSON.parse(saved);
 
             try {
-                const res = await fetch(API_URL, {
-                    method: 'POST', headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ action: 'get_homeworks', username: user.username })
-                });
+                const res = await fetch(API_URL, { method: 'POST', headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'get_homeworks', username: user.username }) });
                 const data = await res.json();
-                
-                if(data.status === 'success') {
-                    renderList(data.data);
-                } else {
-                    document.getElementById('hwListContainer').innerHTML = '<p style="text-align:center">خطا در دریافت اطلاعات</p>';
-                }
-            } catch(e) {
-                // alert("خطا در اتصال به سرور");
-            }
+                if(data.status === 'success') renderList(data.data);
+                else document.getElementById('hwListContainer').innerHTML = '<p style="text-align:center">خطا در دریافت اطلاعات</p>';
+            } catch(e) {}
             document.getElementById('loading').style.display = 'none';
         }
 
         function renderList(list) {
-            const container = document.getElementById('hwListContainer');
-            container.innerHTML = '';
+            const container = document.getElementById('hwListContainer'); container.innerHTML = '';
+            if(list.length === 0) { container.innerHTML = '<div class="card" style="text-align:center; color:#999;">📭 فعلاً مشقی نداری!</div>'; return; }
             
-            if(list.length === 0) {
-                container.innerHTML = '<div class="card" style="text-align:center; color:#999;">📭 فعلاً مشقی نداری!</div>';
-                return;
-            }
-
             list.sort((a,b) => {
                 const sA = a.my_status?(a.my_status.status==='graded'?2:1):0;
                 const sB = b.my_status?(b.my_status.status==='graded'?2:1):0;
@@ -210,40 +189,31 @@
             });
 
             list.forEach(hw => {
-                let statusClass = '';
-                let badgeHtml = '';
-                let statusText = 'انجام نشده';
-
+                let statusClass = '', badgeHtml = '', statusText = 'انجام نشده';
                 if(hw.my_status) {
                     if(hw.my_status.status === 'graded') {
-                        statusClass = 'done';
-                        badgeHtml = `<span class="badge b-done">${hw.my_status.grade || 'نمره ثبت شد'}</span>`;
-                        statusText = 'نمره داده شد ✅';
+                        statusClass = 'done'; badgeHtml = `<span class="badge b-done">${hw.my_status.grade || 'نمره ثبت شد'}</span>`; statusText = 'نمره داده شد ✅';
                     } else {
-                        statusClass = 'pending';
-                        badgeHtml = '<span class="badge b-wait">ارسال شده</span>';
-                        statusText = 'منتظر بررسی ⏳';
+                        statusClass = 'pending'; badgeHtml = '<span class="badge b-wait">ارسال شده</span>'; statusText = 'منتظر بررسی ⏳';
                     }
-                } else {
-                    statusClass = 'new';
-                    badgeHtml = '<span class="badge b-new">جدید</span>';
-                }
+                } else { statusClass = 'new'; badgeHtml = '<span class="badge b-new">جدید</span>'; }
 
                 const div = document.createElement('div');
                 div.className = `hw-item ${statusClass}`;
                 div.onclick = () => openDetail(hw);
-                div.innerHTML = `
-                    <div>
-                        <div style="font-weight:bold; font-size:1rem; margin-bottom:5px;">${hw.title}</div>
-                        <div style="font-size:0.8rem; color:#7f8c8d;">📅 ${hw.date}</div>
-                    </div>
-                    <div style="text-align:left;">
-                        ${badgeHtml}
-                        <div style="font-size:0.7rem; margin-top:5px; color:#95a5a6;">${statusText}</div>
-                    </div>
-                `;
+                div.innerHTML = `<div><div style="font-weight:bold; font-size:1rem; margin-bottom:5px;">${hw.title}</div><div style="font-size:0.8rem; color:#7f8c8d;">📅 ${hw.date}</div></div><div style="text-align:left;">${badgeHtml}<div style="font-size:0.7rem; margin-top:5px; color:#95a5a6;">${statusText}</div></div>`;
                 container.appendChild(div);
             });
+        }
+
+        // --- ساخت لینک سالم (مهم برای حل مشکل ویس) ---
+        function getSafeUrl(path) {
+            if(!path) return '';
+            if(path.startsWith('http')) return path;
+            // حذف اسلش اضافی از آخر API_URL و اول path
+            let base = API_URL.replace(/\/$/, '');
+            let rel = path.startsWith('/') ? path : '/' + path;
+            return base + rel;
         }
 
         function openDetail(hw) {
@@ -261,59 +231,39 @@
             selectedImageFile = null;
 
             if(hw.my_status && hw.my_status.status === 'graded') {
-                // --- نمایش نتیجه ---
                 subArea.style.display = 'none';
                 fbContainer.style.display = 'block';
                 
-                // 1. نمایش فایل ارسالی خود دانش‌آموز (🆕 قابلیت جدید)
+                // نمایش فایل ارسالی خود دانش‌آموز
                 myWorkContainer.style.display = 'block';
                 const myContent = document.getElementById('myWorkContent');
-                let myFileUrl = hw.my_status.file;
-                if(!myFileUrl.startsWith('http')) myFileUrl = API_URL + myFileUrl;
-                
-                if(hw.my_status.type === 'voice') {
-                    myContent.innerHTML = `<audio controls src="${myFileUrl}" style="width:100%"></audio>`;
-                } else {
-                    myContent.innerHTML = `<img src="${myFileUrl}" class="thumb-img" onclick="openLightbox(this.src)">`;
-                }
+                let myFileUrl = getSafeUrl(hw.my_status.file);
+                if(hw.my_status.type === 'voice') myContent.innerHTML = `<audio controls src="${myFileUrl}" class="audio-player"></audio>`;
+                else myContent.innerHTML = `<img src="${myFileUrl}" class="thumb-img" onclick="openLightbox(this.src)">`;
 
-                // 2. نمایش نظرات معلم
                 document.getElementById('fGrade').innerText = hw.my_status.grade;
                 document.getElementById('fText').innerText = hw.my_status.feedback || "بدون پیام.";
                 
-                // ویس معلم
+                // ویس معلم (با لینک سالم)
                 if(hw.my_status.teacher_voice) {
                     document.getElementById('fVoiceBox').style.display = 'block';
-                    let vUrl = hw.my_status.teacher_voice;
-                    if(!vUrl.startsWith('http')) vUrl = API_URL + vUrl;
                     const audioEl = document.getElementById('fAudio');
-                    audioEl.src = vUrl;
+                    audioEl.src = getSafeUrl(hw.my_status.teacher_voice);
                     audioEl.load();
-                } else {
-                    document.getElementById('fVoiceBox').style.display = 'none';
-                }
+                } else document.getElementById('fVoiceBox').style.display = 'none';
 
                 // عکس معلم
                 if(hw.my_status.teacher_image) {
                     document.getElementById('fImageBox').style.display = 'block';
-                    let iUrl = hw.my_status.teacher_image;
-                    if(!iUrl.startsWith('http')) iUrl = API_URL + iUrl;
-                    document.getElementById('fImage').src = iUrl;
-                } else {
-                    document.getElementById('fImageBox').style.display = 'none';
-                }
+                    document.getElementById('fImage').src = getSafeUrl(hw.my_status.teacher_image);
+                } else document.getElementById('fImageBox').style.display = 'none';
 
             } else {
-                // --- حالت ارسال ---
                 subArea.style.display = 'block';
                 fbContainer.style.display = 'none';
                 myWorkContainer.style.display = 'none';
-                
-                if (hw.my_status && hw.my_status.status === 'pending') {
-                    document.getElementById('recStatus').innerText = "✅ قبلاً فایل ارسال کردید (ارسال مجدد جایگزین می‌شود)";
-                } else {
-                    document.getElementById('recStatus').innerText = "برای ضبط صدا دکمه را بزنید";
-                }
+                if (hw.my_status && hw.my_status.status === 'pending') document.getElementById('recStatus').innerText = "✅ قبلاً فایل ارسال کردید (ارسال مجدد جایگزین می‌شود)";
+                else document.getElementById('recStatus').innerText = "برای ضبط صدا دکمه را بزنید";
             }
         }
 
@@ -334,11 +284,7 @@
         let startTime;
 
         micBtn.addEventListener('click', async () => {
-            if (!isRecording) {
-                startRecording();
-            } else {
-                stopRecording();
-            }
+            if (!isRecording) startRecording(); else stopRecording();
         });
 
         async function startRecording() {
@@ -346,49 +292,34 @@
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
                 audioChunks = [];
-
                 mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
-                
                 mediaRecorder.onstop = () => {
                     audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    const audioUrl = URL.createObjectURL(audioBlob);
-                    document.getElementById('audioPlayer').src = audioUrl;
-                    
+                    document.getElementById('audioPlayer').src = URL.createObjectURL(audioBlob);
                     document.getElementById('micBtn').style.display = 'none';
                     document.getElementById('timerDisplay').style.display = 'none';
                     document.getElementById('audioPreview').style.display = 'block';
-                    
                     clearInterval(timerInterval);
                     isRecording = false;
                 };
-
                 mediaRecorder.start();
                 isRecording = true;
                 micBtn.classList.add('recording');
                 document.getElementById('recStatus').innerText = "درحال ضبط... (برای توقف کلیک کنید)";
                 startTime = Date.now();
-                
                 timerInterval = setInterval(() => {
                     const diff = Math.floor((Date.now() - startTime) / 1000);
                     const m = Math.floor(diff / 60);
                     const s = diff % 60;
                     timerDisplay.innerText = `${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
                 }, 1000);
-
-            } catch (err) {
-                alert("دسترسی به میکروفون داده نشد! لطفاً بررسی کنید.");
-            }
+            } catch (err) { alert("دسترسی به میکروفون داده نشد!"); }
         }
 
-        function stopRecording() {
-            if(mediaRecorder) mediaRecorder.stop();
-            micBtn.classList.remove('recording');
-        }
+        function stopRecording() { if(mediaRecorder) mediaRecorder.stop(); micBtn.classList.remove('recording'); }
 
         function resetRecorder() {
-            audioBlob = null;
-            audioChunks = [];
-            isRecording = false;
+            audioBlob = null; audioChunks = []; isRecording = false;
             document.getElementById('micBtn').style.display = 'flex';
             document.getElementById('micBtn').classList.remove('recording');
             document.getElementById('timerDisplay').style.display = 'block';
@@ -398,7 +329,6 @@
             if(timerInterval) clearInterval(timerInterval);
         }
 
-        // --- ارسال ---
         function handleImage(input) {
             if (input.files && input.files[0]) {
                 selectedImageFile = input.files[0];
@@ -413,43 +343,28 @@
 
         async function uploadVoice() {
             if(!audioBlob) return;
-            const reader = new FileReader();
-            reader.readAsDataURL(audioBlob);
+            const reader = new FileReader(); reader.readAsDataURL(audioBlob);
             reader.onloadend = () => performSubmit(reader.result, 'voice.webm', 'voice');
         }
 
         async function uploadImage() {
             if(!selectedImageFile) return;
-            const reader = new FileReader();
-            reader.readAsDataURL(selectedImageFile);
+            const reader = new FileReader(); reader.readAsDataURL(selectedImageFile);
             reader.onloadend = () => performSubmit(reader.result, selectedImageFile.name, 'image');
         }
 
         async function performSubmit(fileData, fileName, type) {
             document.getElementById('loading').style.display = 'flex';
             const user = JSON.parse(localStorage.getItem('chamran_db_vfinal_creds'));
-
             try {
-                const upRes = await fetch(API_URL, {
-                    method: 'POST', headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ action: 'upload_file', file_data: fileData, file_name: fileName, hw_type: type, username: user.username })
-                });
+                const upRes = await fetch(API_URL, { method: 'POST', headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'upload_file', file_data: fileData, file_name: fileName, hw_type: type, username: user.username }) });
                 const upData = await upRes.json();
-
                 if(upData.status === 'success') {
-                    const subRes = await fetch(API_URL, {
-                        method: 'POST', headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ action: 'submit_homework', username: user.username, password: user.password, hw_id: currentHwId, link: upData.url, hw_type: type })
-                    });
+                    const subRes = await fetch(API_URL, { method: 'POST', headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'submit_homework', username: user.username, password: user.password, hw_id: currentHwId, link: upData.url, hw_type: type }) });
                     const subData = await subRes.json();
-                    
-                    if(subData.status === 'success') {
-                        alert("✅ با موفقیت ارسال شد!");
-                        closeDetail();
-                        fetchHomeworks();
-                    } else { alert("خطا در ثبت: " + subData.message); }
-                } else { alert("خطا در آپلود: " + upData.message); }
-
+                    if(subData.status === 'success') { alert("✅ ارسال شد!"); closeDetail(); fetchHomeworks(); } 
+                    else { alert("خطا در ثبت"); }
+                } else { alert("خطا در آپلود"); }
             } catch(e) { alert("خطای شبکه"); }
             document.getElementById('loading').style.display = 'none';
         }
