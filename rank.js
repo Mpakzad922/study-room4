@@ -1,11 +1,11 @@
 // ********************************************
-// 🎮 فایل هسته: rank.js (نسخه نهایی و اصلاح شده 💎)
+// 🎮 فایل هسته: rank.js (نسخه نهایی و امن 💎)
 // ********************************************
 
-// دریافت آدرس از فایل تنظیمات (اگر نبود، آدرس پیش‌فرض)
+// دریافت آدرس از فایل تنظیمات
 const SERVER_URL = (typeof APP_CONFIG !== 'undefined') ? APP_CONFIG.API_URL : "https://chamran-api.liara.run";
 
-// 🎨 تزریق استایل‌های پاپ‌آپ و انیمیشن‌ها به صفحه
+// 🎨 تزریق استایل‌های پاپ‌آپ و انیمیشن‌ها
 const xpPopupStyle = document.createElement('style');
 xpPopupStyle.innerHTML = `
     .xp-popup-overlay {
@@ -13,6 +13,7 @@ xpPopupStyle.innerHTML = `
         background: rgba(0,0,0,0.85); z-index: 20000;
         display: flex; justify-content: center; align-items: center;
         opacity: 0; transition: opacity 0.5s; backdrop-filter: blur(8px);
+        pointer-events: none;
     }
     .xp-popup-content {
         text-align: center; color: white; transform: scale(0.5); 
@@ -36,15 +37,6 @@ xpPopupStyle.innerHTML = `
 document.head.appendChild(xpPopupStyle);
 
 const RankSystem = {
-    // لیست مقام‌ها بر اساس XP
-    ranks: [
-        { min: 0, title: "🐣 نوآموز" },
-        { min: 500, title: "🛡️ محافظ" },
-        { min: 1500, title: "⚔️ جنگجو" },
-        { min: 3000, title: "👑 فرمانده" },
-        { min: 5000, title: "💎 اسطوره" }
-    ],
-
     // داده‌های پیش‌فرض کاربر
     data: { xp: 0, gem: 0, rank: "🐣 نوآموز", completed: [], playback: {}, exams: {}, exam_details: {} },
     notifications: [],
@@ -76,7 +68,7 @@ const RankSystem = {
         }, 500);
     },
 
-    // ذخیره آنی در حافظه مرورگر
+    // ذخیره آنی در حافظه مرورگر (کش)
     saveToLocal: function() {
         try {
             const key = 'chamran_db_vfinal_creds';
@@ -155,7 +147,7 @@ const RankSystem = {
         });
     },
 
-    // اسکرول بی‌پایان (Infinite Marquee)
+    // اسکرول بی‌پایان
     startAutoScroll: function(element) {
         if (element.scrollWidth <= element.clientWidth) return;
 
@@ -188,6 +180,7 @@ const RankSystem = {
         this.data.playback[sId] = Math.floor(time);
         this.saveToLocal();
         
+        // هر 15 ثانیه یا اگر فورس باشد، به سرور بفرست
         if(Math.floor(time) % 15 === 0 || forceSync) {
              SyncManager.addToQueue('sync', null, forceSync); 
         }
@@ -233,8 +226,6 @@ const RankSystem = {
         }, 3000);
     },
     
-    getDevice: function() { return /Mobile|Android/i.test(navigator.userAgent) ? "موبایل" : "کامپیوتر"; },
-    
     toPersianNum: function(n) { 
         if(n === undefined || n === null) return "۰"; 
         return n.toString().replace(/\d/g, x => ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'][x]); 
@@ -242,7 +233,7 @@ const RankSystem = {
 };
 
 // ********************************************
-// 📡 مدیر همگام‌سازی (Sync Manager) - ایمن شده
+// 📡 مدیر همگام‌سازی (Sync Manager) - اصلاح شده برای سرور جدید
 // ********************************************
 const SyncManager = {
     queue: [], 
@@ -262,37 +253,39 @@ const SyncManager = {
     },
 
     addToQueue: function(action, logData = null, forcePlayback = false) {
-        let extraParams = {};
-        if (action === 'claim_reward' && logData) {
-            extraParams = { ...logData }; 
-            
-            // ثبت فوری نمره آزمون در حافظه محلی برای نمایش سریع
-            if(logData.reward_type === 'exam') {
-                const sId = String(logData.reward_id);
-                RankSystem.data.exams[sId] = logData.exam_score;
-                RankSystem.data.exam_details[sId] = {
-                    score: logData.exam_score,
-                    wrong: logData.wrong_list,
-                    answers: logData.user_answers,
-                    date: new Date().toLocaleDateString('fa-IR') 
-                };
-                RankSystem.saveToLocal();
-            }
+        let finalAction = action;
+        let payload = {};
+
+        // ترجمه درخواست‌های قدیمی به متدهای جدید سرور
+        if (action === 'claim_reward' && logData && logData.reward_type === 'lesson') {
+            finalAction = 'claim_lesson_reward';
+            payload.lesson_id = logData.reward_id;
+        } 
+        else if (action === 'report') {
+            // گزارش‌ها را فعلاً به عنوان سینک معمولی می‌فرستیم
+            finalAction = 'sync';
+        }
+        else if (action === 'sync') {
+            // درخواست سینک عادی
+            finalAction = 'sync';
+        }
+        else {
+            // سایر دستورات مثل submit_exam مستقیم رد می‌شوند
+            if(logData) payload = { ...logData };
         }
 
         const item = {
-            action: action, 
+            action: finalAction, 
             username: this.username, 
             password: this.password,
-            jsonData: JSON.stringify(RankSystem.data), // ارسال آخرین وضعیت
-            logData: logData,
+            jsonData: JSON.stringify(RankSystem.data), // همیشه آخرین وضعیت کلاینت را می‌فرستیم (برای سینک پخش ویدیو)
             timestamp: Date.now(),
             force_playback: forcePlayback,
-            ...extraParams 
+            ...payload 
         };
 
-        // جلوگیری از تکرار درخواست‌های sync
-        if(action === 'sync' && !forcePlayback && this.queue.length > 0) {
+        // جلوگیری از تکرار درخواست‌های sync پشت سر هم
+        if(finalAction === 'sync' && !forcePlayback && this.queue.length > 0) {
              const lastItem = this.queue[this.queue.length-1];
              if (lastItem.action === 'sync') {
                  this.queue[this.queue.length-1] = item; 
@@ -338,7 +331,8 @@ const SyncManager = {
         this.isSyncing = true;
         const item = this.queue[0]; 
         
-        if(item.action === 'sync') {
+        // آپدیت دیتای ارسالی با آخرین وضعیت (برای سینک دقیق)
+        if(item.action === 'sync' || item.action === 'claim_lesson_reward') {
             item.jsonData = JSON.stringify(RankSystem.data); 
         }
         
@@ -353,9 +347,9 @@ const SyncManager = {
                 this.queue.shift(); 
                 this.saveQueue();
                 
+                // اگر سرور دیتای جدید داد، آپدیت کن
                 if (data.serverData) {
                     RankSystem.init(data.serverData); 
-                    
                     if (data.added && data.added > 0) {
                         if(!document.fullscreenElement) {
                              RankSystem.showRewardPopup(data.added, data.addedGem);
@@ -375,6 +369,9 @@ const SyncManager = {
                     this.queue = []; 
                     this.saveQueue();
                 } else {
+                    // اگر خطا داد ولی مسدود نبود، شاید مشکل موقت است. 
+                    // فعلا آیتم را حذف میکنیم تا صف گیر نکند، یا میتوانیم نگه داریم.
+                    // اینجا حذف میکنیم.
                     this.queue.shift();
                     this.saveQueue();
                 }
@@ -389,7 +386,7 @@ const SyncManager = {
     }
 };
 
-// 🌟 تابع جشن و پایکوبی (Confetti) - تنها نسخه معتبر در کل پروژه
+// 🌟 تابع جشن و پایکوبی (Confetti)
 function launchConfetti() {
     const c = document.getElementById('confetti-canvas');
     if(!c) return;
