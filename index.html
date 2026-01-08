@@ -736,7 +736,8 @@
 
             document.getElementById('viewStatus').innerText = "تکمیل شد! ✅";
 
-            SyncManager.addToQueue('claim_reward', { reward_type: 'lesson', reward_id: activeVid.id });
+            // استفاده از متد جدید و امن
+            SyncManager.addToQueue('claim_lesson_reward', { reward_id: activeVid.id });
 
             setTimeout(() => {
                 if(typeof launchConfetti === 'function') launchConfetti();
