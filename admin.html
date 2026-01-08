@@ -524,8 +524,9 @@
     }
 
     function createSubCard(username, name, sub) {
+        // دریافت لینک سالم (اگر لینک کامل است خودش را استفاده کن، اگر نسبی است آدرس سرور را اضافه کن)
         const fullUrl = sub.file.startsWith('http') ? sub.file : API_URL + sub.file;
-        let mediaHtml = sub.type === 'voice' ? `<audio controls src="${fullUrl}"></audio>` : `<a href="${fullUrl}" target="_blank"><img src="${fullUrl}" style="height:100px; border-radius:8px; display:block; margin:5px auto;"></a>`;
+        let mediaHtml = sub.type === 'voice' ? `<audio controls src="${fullUrl}" style="width:100%;margin-top:10px;"></audio>` : `<a href="${fullUrl}" target="_blank"><img src="${fullUrl}" style="height:100px; border-radius:8px; display:block; margin:5px auto;"></a>`;
         
         const div = document.createElement('div');
         div.className = `sub-card ${sub.status}`;
@@ -606,6 +607,28 @@
         }
     }
 
+    // 🚀 تابع جدید آپلود استاندارد (FormData)
+    async function uploadFileFormData(fileBlob, fileType) {
+        const formData = new FormData();
+        // اگر فایل Blob است، نام و نوعش را مشخص میکنیم
+        if (fileBlob instanceof Blob) {
+            const ext = fileType === 'voice' ? 'webm' : 'jpg';
+            formData.append('file', fileBlob, `upload.${ext}`);
+        } else {
+            formData.append('file', fileBlob);
+        }
+        formData.append('type', fileType); 
+
+        // ارسال به روت جدید /upload که با Multer کار میکند
+        const res = await fetch(`${API_URL}/upload`, {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+        if (data.status === 'success') return data.url;
+        throw new Error(data.message || 'آپلود انجام نشد');
+    }
+
     async function submitGrade(username) {
         if(!SELECTED_GRADE) return alert("لطفاً اول نمره کیفی (دکمه‌های رنگی) را انتخاب کنید.");
         
@@ -614,47 +637,45 @@
 
         document.getElementById('loadingBox').style.display = 'flex';
 
-        // 1. آپلود ویس
-        let voiceUrl = '';
-        if(TEACHER_VOICE_BLOB) {
-            const reader = new FileReader();
-            reader.readAsDataURL(TEACHER_VOICE_BLOB);
-            await new Promise(r => reader.onloadend = r);
-            const res = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'upload_file', file_data:reader.result, file_name:'teacher_voice.webm', hw_type:'voice'}) });
-            voiceUrl = (await res.json()).url;
+        try {
+            // 1. آپلود ویس (اگر ضبط شده باشد)
+            let voiceUrl = '';
+            if(TEACHER_VOICE_BLOB) {
+                voiceUrl = await uploadFileFormData(TEACHER_VOICE_BLOB, 'voice');
+            }
+
+            // 2. آپلود عکس (اگر انتخاب شده باشد)
+            let imgUrl = '';
+            if(TEACHER_IMG_FILE) {
+                imgUrl = await uploadFileFormData(TEACHER_IMG_FILE, 'image');
+            }
+
+            // 3. ثبت نمره در دیتابیس
+            const res = await fetch(API_URL, {
+                method: 'POST', headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    action: 'grade_homework',
+                    admin_token: ADMIN_TOKEN,
+                    hw_id: CURRENT_HW_ID,
+                    target_user: username,
+                    quality_score: SELECTED_GRADE,
+                    xp_reward: xp,
+                    feedback: feedback,
+                    teacher_voice: voiceUrl, // لینک فایلی که تازه آپلود شد
+                    teacher_image: imgUrl
+                })
+            });
+
+            if((await res.json()).status === 'success') {
+                alert("✅ نمره و بازخورد ثبت شد.");
+                TEACHER_VOICE_BLOB = null; TEACHER_IMG_FILE = null; SELECTED_GRADE = '';
+                fetchData(); 
+            } else { alert("خطا در ثبت."); }
+
+        } catch(e) {
+            console.error(e);
+            alert("❌ خطا: " + (e.message || "مشکل در ارتباط با سرور"));
         }
-
-        // 2. آپلود عکس
-        let imgUrl = '';
-        if(TEACHER_IMG_FILE) {
-            const reader = new FileReader();
-            reader.readAsDataURL(TEACHER_IMG_FILE);
-            await new Promise(r => reader.onloadend = r);
-            const res = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'upload_file', file_data:reader.result, file_name:'teacher_img.jpg', hw_type:'image'}) });
-            imgUrl = (await res.json()).url;
-        }
-
-        // 3. ثبت نمره
-        const res = await fetch(API_URL, {
-            method: 'POST', headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                action: 'grade_homework',
-                admin_token: ADMIN_TOKEN,
-                hw_id: CURRENT_HW_ID,
-                target_user: username,
-                quality_score: SELECTED_GRADE,
-                xp_reward: xp,
-                feedback: feedback,
-                teacher_voice: voiceUrl,
-                teacher_image: imgUrl
-            })
-        });
-
-        if((await res.json()).status === 'success') {
-            alert("✅ نمره و بازخورد ثبت شد.");
-            TEACHER_VOICE_BLOB = null; TEACHER_IMG_FILE = null; SELECTED_GRADE = '';
-            fetchData(); 
-        } else { alert("خطا در ثبت."); }
         
         document.getElementById('loadingBox').style.display = 'none';
     }
