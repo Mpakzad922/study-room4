@@ -220,34 +220,41 @@
             document.getElementById('examForm').style.display = type === 'exam' ? 'block' : 'none';
         }
 
-        // --- 3. آپلود عکس ---
+        // --- 3. آپلود عکس (با FormData و Multer) ---
         const fileInput = document.getElementById('globalFileInput');
         function triggerUpload(targetId) { UPLOAD_TARGET_ID = targetId; fileInput.click(); }
 
-        fileInput.addEventListener('change', function() {
+        fileInput.addEventListener('change', async function() {
             if (this.files && this.files[0]) {
                 const file = this.files[0];
                 const btn = document.querySelector(`button[onclick="triggerUpload('${UPLOAD_TARGET_ID}')"]`);
                 const originalText = btn.innerHTML;
                 btn.innerHTML = "⏳..."; btn.classList.add('upload-loading');
 
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    fetch(API_URL, {
-                        method: 'POST', headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ action: 'upload_file', admin_token: ADMIN_TOKEN, file_data: e.target.result, file_name: file.name })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if(data.status === 'success') {
-                            document.getElementById(UPLOAD_TARGET_ID).value = API_URL + data.url;
-                            btn.innerHTML = "✅"; setTimeout(() => btn.innerHTML = originalText, 2000);
-                        } else { alert("خطا: " + data.message); btn.innerHTML = "❌"; }
-                    })
-                    .catch(err => { alert("خطای شبکه"); btn.innerHTML = originalText; })
-                    .finally(() => btn.classList.remove('upload-loading'));
-                };
-                reader.readAsDataURL(file);
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('type', 'exam_img'); // پوشه مقصد را مشخص میکند
+
+                try {
+                    const res = await fetch(`${API_URL}/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await res.json();
+                    
+                    if(data.status === 'success') {
+                        // لینک کامل را در اینپوت می‌گذاریم که در همه جا کار کند
+                        const fullUrl = API_URL + data.url;
+                        document.getElementById(UPLOAD_TARGET_ID).value = fullUrl;
+                        btn.innerHTML = "✅"; setTimeout(() => btn.innerHTML = originalText, 2000);
+                    } else {
+                        alert("خطا: " + data.message); btn.innerHTML = "❌";
+                    }
+                } catch(e) {
+                    alert("خطای شبکه"); btn.innerHTML = originalText;
+                } finally {
+                    btn.classList.remove('upload-loading');
+                }
             }
             this.value = '';
         });
@@ -290,7 +297,7 @@
             } else { alert("❌ خطا: " + res.message); }
         }
 
-        // --- 5. فرم تکلیف (جدید) ---
+        // --- 5. فرم تکلیف ---
         async function saveHomework() {
             const title = document.getElementById('h_title').value;
             const desc = document.getElementById('h_desc').value;
