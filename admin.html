@@ -9,54 +9,52 @@
         :root { --primary: #2c3e50; --accent: #27ae60; --bg: #f4f6f9; --white: #fff; --success: #27ae60; --danger: #c0392b; --text-dark: #34495e; --text-light: #7f8c8d; --gem: #9b59b6; }
         body { font-family: 'Vazirmatn', sans-serif; background: var(--bg); margin: 0; padding: 0 0 90px 0; font-size: 14px; color: var(--text-dark); }
 
-        /* صفحه ورود مدیر */
+        /* --- ورود --- */
         #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
         #loginScreen input { padding: 12px; border-radius: 10px; border: none; text-align: center; width: 260px; font-size: 1.1rem; margin-bottom: 15px; font-family: inherit; }
         #loginScreen button { padding: 12px 40px; background: var(--accent); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.3s; }
 
         #mainApp { display: none; }
         
-        /* هدر */
+        /* --- هدر --- */
         header { background: var(--primary); color: white; padding: 15px 20px; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
         header h1 { margin: 0; font-size: 1.2rem; }
         .head-btns { display: flex; gap: 10px; }
         .refresh-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 1.2rem; transition: 0.2s; }
         .refresh-btn:hover { background: rgba(255,255,255,0.4); }
 
-        /* تب‌های پایین */
+        /* --- تب‌ها --- */
         .tabs { display: flex; justify-content: space-around; background: white; padding: 10px 0; position: fixed; bottom: 0; width: 100%; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); z-index: 100; overflow-x: auto; }
         .tab-btn { border: none; background: none; flex: 1; text-align: center; color: var(--text-light); cursor: pointer; display: flex; flex-direction: column; align-items: center; font-family: inherit; font-size: 0.75rem; min-width: 60px; }
         .tab-btn.active { color: var(--primary); font-weight: bold; }
         .tab-icon { font-size: 1.5rem; margin-bottom: 4px; }
 
-        /* محتوای صفحات */
         .section { display: none; padding: 20px; animation: fadeIn 0.4s; }
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* کارت‌ها */
+        /* --- کارت‌ها --- */
         .card { background: var(--white); border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); border-right: 5px solid transparent; transition: all 0.2s; }
         .user-card { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .lesson-card { cursor: pointer; position: relative; }
-        .lesson-card:active { transform: scale(0.99); background-color: #fafafa; }
         
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; color: white; font-weight: bold; }
         .bg-blue { background: #3498db; }
         .bg-gem { background: #9b59b6; margin-right: 5px; }
         .bg-gold { background: #f1c40f; color: #333; }
 
-        /* نشانگر وضعیت آنلاین */
+        /* --- وضعیت آنلاین --- */
         .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-left: 5px; }
         .st-online { background: #2ecc71; box-shadow: 0 0 5px #2ecc71; }
         .st-recent { background: #f39c12; }
         .st-offline { background: #95a5a6; }
 
-        /* مودال جزئیات */
+        /* --- مودال --- */
         #detailModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 500; display: none; justify-content: center; align-items: flex-end; }
         .modal-content { background: #f8f9fa; width: 100%; max-width: 600px; max-height: 85vh; overflow-y: auto; border-radius: 25px 25px 0 0; padding: 25px; box-sizing: border-box; animation: slideUp 0.3s; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        /* جدول‌ها */
+        /* --- جدول‌ها --- */
         table { width: 100%; border-collapse: separate; border-spacing: 0; background: white; border-radius: 12px; overflow: hidden; margin-top: 10px; border: 1px solid #eee; }
         th, td { padding: 12px; text-align: center; border-bottom: 1px solid #f1f1f1; vertical-align: middle; }
         th { background: #ecf0f1; color: var(--text-dark); font-weight: bold; font-size: 0.9rem; }
@@ -69,18 +67,16 @@
         .search-box:focus { border-color: var(--accent); }
 
         .detail-header { text-align: center; background: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        
         .student-list-container { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ddd; font-size: 0.9rem; }
         .st-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #f9f9f9; }
-        .st-row:last-child { border: none; }
         .st-score { font-weight: bold; }
         
-        /* لودینگ */
+        /* --- لودینگ --- */
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; flex-direction: column; }
         .spinner { width: 40px; height: 40px; border: 4px solid #eee; border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* مدیریت کاربران (جدول) */
+        /* --- مدیریت کاربران --- */
         .new-user-box { background: #e8f6f3; padding: 15px; border-radius: 15px; border: 1px dashed #27ae60; margin-bottom: 20px; display: none; }
         .manage-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         .manage-table th { background: #34495e; color: white; padding: 10px; font-size: 0.85rem; }
@@ -89,16 +85,14 @@
         .manage-input:focus { border-color: #3498db; outline: none; background: #f0f8ff; }
         
         .save-row-btn { background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; width: 45px; font-weight: bold; }
-        .save-row-btn:active { transform: scale(0.95); }
-        
         .del-row-btn { background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 45px; }
         .del-row-btn:hover { background: #c0392b; }
 
-        /* استایل اعلانات */
+        /* --- اعلانات --- */
         .notif-input-area { background: #e8f4f8; padding: 15px; border-radius: 15px; border: 1px dashed #3498db; margin-bottom: 20px; }
         .notif-list-item { background: white; padding: 10px; margin-bottom: 10px; border-radius: 10px; border-right: 4px solid #3498db; display: flex; justify-content: space-between; align-items: center; }
 
-        /* بخش تکالیف (پوشه‌بندی و نمره) */
+        /* --- تکالیف (جدید) --- */
         .folder-card { background: #fff; border: 1px solid #ddd; border-right: 5px solid #f39c12; margin-bottom: 10px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
         .folder-card:hover { transform: translateX(-5px); background: #fffdf9; }
 
@@ -108,35 +102,32 @@
         
         .breadcrumb { background: #e8f6f3; padding: 10px; border-radius: 8px; margin-bottom: 15px; color: #16a085; font-weight: bold; display: flex; align-items: center; cursor: pointer; }
 
-        /* پنل نمره‌دهی */
         .grade-panel { background: #f9f9f9; padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px dashed #ccc; }
         .grade-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
         .g-btn { padding: 10px; border: none; border-radius: 8px; cursor: pointer; color: white; font-family: inherit; font-size: 0.9rem; transition: 0.2s; opacity: 0.7; }
-        .g-btn:hover { opacity: 1; transform: scale(1.02); }
-        .g-btn.selected { opacity: 1; box-shadow: 0 0 0 3px rgba(0,0,0,0.2); transform: scale(1.05); }
+        .g-btn:hover, .g-btn.selected { opacity: 1; transform: scale(1.05); box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
         
-        .g-vgood { background: #8e44ad; } 
-        .g-good { background: #27ae60; } 
-        .g-acc { background: #2980b9; } 
-        .g-bad { background: #c0392b; }
+        .g-vgood { background: #8e44ad; } .g-good { background: #27ae60; } 
+        .g-acc { background: #2980b9; } .g-bad { background: #c0392b; }
 
         .feedback-tools { display: flex; gap: 10px; margin-top: 15px; align-items: center; background: white; padding: 10px; border-radius: 8px; border: 1px solid #eee; }
         .rec-btn { background: #e74c3c; color: white; width: 45px; height: 45px; border-radius: 50%; border: none; cursor: pointer; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         .rec-btn.recording { animation: pulse 1s infinite; background: red; box-shadow: 0 0 10px red; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
         
         .fb-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-top: 10px; font-family: inherit; box-sizing: border-box; }
-        audio { width: 100%; margin-top: 10px; height: 35px; }
         
-        /* 🆕 لیست غایبین */
-        .missing-list { margin-top: 25px; padding-top: 15px; border-top: 2px dashed #ffcdd2; }
-        .missing-item { display: inline-block; background: #ffebee; color: #c0392b; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem; margin: 3px; border: 1px solid #ffcdd2; }
+        /* لیست غایبین */
+        .list-header { background: #eee; color: #555; padding: 8px 15px; border-radius: 8px; margin: 20px 0 10px 0; font-weight: bold; font-size: 0.9rem; border-right: 4px solid #7f8c8d; }
+        .missing-list { margin-top: 25px; padding-top: 15px; border-top: 2px dashed #ffcdd2; background: #fff5f5; border-radius: 10px; padding: 15px; }
+        .missing-item { display: inline-block; background: white; color: #c0392b; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem; margin: 3px; border: 1px solid #ffcdd2; }
     </style>
 </head>
 <body>
 
     <div id="loginScreen">
         <h2 style="margin-bottom:20px;">🛡️ پنل مدیریت چمران</h2>
-        <input type="password" id="adminPass" placeholder="رمز عبور مدیر را وارد کنید...">
+        <input type="password" id="adminPass" placeholder="رمز عبور مدیر...">
         <button onclick="doLogin()">ورود امن</button>
     </div>
 
@@ -157,13 +148,17 @@
 
         <div id="tab-homeworks" class="section active">
             <div id="hwFoldersView">
-                <h3 style="color:var(--primary); text-align:center;">📂 پوشه تکالیف</h3>
+                <h3 style="color:var(--primary); text-align:center;">📂 آرشیو تکالیف</h3>
                 <div id="hwFoldersList"></div>
             </div>
             <div id="hwStudentsView" style="display:none;">
-                <div class="breadcrumb" onclick="showFolders()">🔙 بازگشت به پوشه‌ها</div>
+                <div class="breadcrumb" onclick="showFolders()">🔙 بازگشت به لیست پوشه‌ها</div>
                 <h3 id="currentHwTitle" style="margin-top:0; color:#e67e22; border-bottom:1px solid #ddd; padding-bottom:10px;">...</h3>
-                <div id="hwStudentsList"></div>
+                
+                <div id="pendingListContainer"></div>
+                <div id="gradedListContainer"></div>
+                
+                <div id="missingListContainer" class="missing-list"></div>
             </div>
         </div>
 
@@ -189,11 +184,13 @@
 
         <div id="tab-lessons" class="section">
             <h3 style="color:var(--primary);">📊 آمار بازدید فیلم‌ها</h3>
+            <p style="color:red; font-size:0.8rem;">⚠️ نکته: برای دیدن اسامی، روی کارت درس کلیک کنید.</p>
             <div id="lessonsStats"></div>
         </div>
 
         <div id="tab-exams" class="section">
             <h3 style="color:var(--primary);">📝 دفتر نمرات</h3>
+            <p style="color:red; font-size:0.8rem;">⚠️ نکته: برای دیدن لیست نمرات، روی کارت آزمون کلیک کنید.</p>
             <div id="examsStats"></div>
         </div>
 
@@ -202,6 +199,7 @@
                 <h3 style="color:#27ae60; margin:0;">🛠️ مدیریت کاربران</h3>
                 <button onclick="toggleNewUserBox()" style="background:#3498db; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;">➕ کاربر جدید</button>
             </div>
+
             <div id="newUserBox" class="new-user-box">
                 <h4 style="margin-top:0;">ثبت‌نام دانش‌آموز جدید</h4>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
@@ -211,6 +209,7 @@
                     <button onclick="createUser()" style="background:#27ae60; color:white; border:none; border-radius:5px; cursor:pointer;">ثبت نهایی</button>
                 </div>
             </div>
+
             <div style="overflow-x:auto;">
                 <table class="manage-table">
                     <thead>
@@ -218,7 +217,7 @@
                             <th style="width:25%">نام کامل</th>
                             <th style="width:20%">نام کاربری</th>
                             <th style="width:15%">رمز</th>
-                            <th style="width:15%">XP</th>
+                            <th style="width:15%">امتیاز (XP)</th>
                             <th style="width:15%">عملیات</th>
                         </tr>
                     </thead>
@@ -257,12 +256,9 @@
 <script>
     const API_URL = APP_CONFIG.API_URL;
     let ADMIN_TOKEN = ""; 
-    let ALL_USERS = [];
-    let META_EXAMS = {};       
-    let META_LESSONS = {}; 
-    let ALL_HOMEWORKS = [];
-    let NOTIFICATIONS = [];
-
+    let ALL_USERS = [], ALL_HOMEWORKS = [];
+    let META_EXAMS = {}, META_LESSONS = {}, NOTIFICATIONS = [];
+    
     // متغیرهای ضبط صدا و تصویر معلم
     let CURRENT_HW_ID = null;
     let MEDIA_RECORDER = null, AUDIO_CHUNKS = [], TEACHER_VOICE_BLOB = null;
@@ -276,24 +272,22 @@
     async function fetchData() {
         document.getElementById('loadingBox').style.display = 'flex';
         try {
-            const res = await fetch(API_URL, { method: 'POST', headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'get_all_users', admin_token: ADMIN_TOKEN }) });
-            const data = await res.json();
+            const r1 = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'get_all_users', admin_token:ADMIN_TOKEN}) });
+            const r2 = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'get_homeworks', admin_token:ADMIN_TOKEN}) });
+            const d1 = await r1.json(); const d2 = await r2.json();
             
-            const hwRes = await fetch(API_URL, { method: 'POST', headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'get_homeworks', admin_token: ADMIN_TOKEN }) });
-            const hwData = await hwRes.json();
-
-            if(data.status === 'success') {
+            if(d1.status === 'success') {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'block';
                 
-                ALL_USERS = data.users.map(u => { try { u.parsedData = JSON.parse(u.json); } catch(e) { u.parsedData = {}; } return u; });
-                META_EXAMS = data.meta.exams || {}; META_LESSONS = data.meta.lessons || {}; NOTIFICATIONS = data.notifications || [];
-                ALL_HOMEWORKS = hwData.data || [];
+                ALL_USERS = d1.users.map(u => { try { u.parsedData = JSON.parse(u.json); } catch(e) { u.parsedData = {}; } return u; });
+                META_EXAMS = d1.meta.exams || {}; META_LESSONS = d1.meta.lessons || {}; NOTIFICATIONS = d1.notifications || [];
+                ALL_HOMEWORKS = d2.data || [];
                 
                 processData();
                 document.getElementById('lastUpdate').innerText = 'بروزرسانی: ' + new Date().toLocaleTimeString('fa-IR');
             } else { 
-                alert("⛔ " + data.message); 
+                alert("⛔ " + d1.message); 
             }
         } catch(e) { console.error(e); alert("❌ خطای ارتباط با سرور"); }
         document.getElementById('loadingBox').style.display = 'none';
@@ -352,92 +346,98 @@
         document.getElementById('hwStudentsView').style.display = 'block';
         document.getElementById('currentHwTitle').innerText = `📂 ${hw.title}`;
         
-        const list = document.getElementById('hwStudentsList');
-        list.innerHTML = '';
+        const pendingContainer = document.getElementById('pendingListContainer');
+        const gradedContainer = document.getElementById('gradedListContainer');
+        const missingContainer = document.getElementById('missingListContainer');
         
-        // --- 1. لیست حاضرین (ارسال کرده‌ها) ---
-        const submittedUsernames = [];
-        const subs = [];
-        
+        pendingContainer.innerHTML = '<div class="list-header" style="border-right-color:#e67e22;">🟠 منتظر بررسی</div>';
+        gradedContainer.innerHTML = '<div class="list-header" style="border-right-color:#27ae60;">🟢 بررسی شده</div>';
+        missingContainer.innerHTML = '<b style="color:#c0392b">❌ انجام نداده‌ها (هنوز ارسال نکرده‌اند):</b><br>';
+
+        const submittedUsers = [];
+        let hasPending = false;
+        let hasGraded = false;
+
         if(hw.submissions) {
-            Object.keys(hw.submissions).forEach(u => {
-                submittedUsernames.push(u);
-                const s = hw.submissions[u];
+            // مرتب سازی: اول جدیدترین‌ها
+            const sortedUsers = Object.keys(hw.submissions).sort((a,b) => {
+                // اگر تاریخ در دیتابیس دقیق نیست، همینطوری نمایش بده
+                return 0; 
+            });
+
+            sortedUsers.forEach(u => {
+                submittedUsers.push(u);
+                const sub = hw.submissions[u];
                 const user = ALL_USERS.find(usr => usr.u === u);
-                subs.push({ username: u, name: user?user.n:u, ...s });
+                const name = user ? user.n : u;
+                
+                const card = createSubCard(u, name, sub);
+                if(sub.status === 'pending') {
+                    pendingContainer.appendChild(card);
+                    hasPending = true;
+                } else {
+                    gradedContainer.appendChild(card);
+                    hasGraded = true;
+                }
             });
         }
 
-        subs.sort((a,b) => (a.status==='pending' && b.status!=='pending') ? -1 : 1);
+        if(!hasPending) pendingContainer.innerHTML += '<p style="color:#999; text-align:center; padding:10px;">موردی نیست.</p>';
+        if(!hasGraded) gradedContainer.innerHTML += '<p style="color:#999; text-align:center; padding:10px;">موردی نیست.</p>';
 
-        if(subs.length === 0) list.innerHTML = '<p style="text-align:center; color:#999;">هنوز کسی این تکلیف را نفرستاده است.</p>';
-
-        subs.forEach(sub => {
-            const isPending = sub.status === 'pending';
-            const statusTxt = isPending ? 'منتظر بررسی' : `✅ ${sub.grade}`;
-            const color = isPending ? '#e67e22' : '#27ae60';
-            const fullUrl = sub.file.startsWith('http') ? sub.file : API_URL + sub.file;
-            
-            let mediaHtml = sub.type === 'voice' ? `<audio controls src="${fullUrl}" style="width:100%; margin:10px 0;"></audio>` : `<a href="${fullUrl}" target="_blank"><img src="${fullUrl}" style="max-height:150px; border-radius:10px; display:block; margin:10px auto;"></a>`;
-
-            const div = document.createElement('div');
-            div.className = `sub-card ${sub.status}`;
-            div.innerHTML = `
-                <div style="display:flex; justify-content:space-between;">
-                    <strong>👤 ${sub.name}</strong>
-                    <span style="color:${color}; font-weight:bold; font-size:0.8rem;">${statusTxt}</span>
-                </div>
-                <div style="font-size:0.7rem; color:#aaa; margin-bottom:10px;">${sub.date}</div>
-                ${mediaHtml}
-                
-                <div class="grade-panel">
-                    <div style="font-size:0.85rem; font-weight:bold; margin-bottom:5px;">✍️ نمره‌دهی و بازخورد:</div>
-                    <div class="grade-btns">
-                        <button class="g-btn g-vgood" onclick="selectGrade(this, 'خیلی خوب', 50, '${sub.username}')">💎 خیلی خوب</button>
-                        <button class="g-btn g-good" onclick="selectGrade(this, 'خوب', 30, '${sub.username}')">🥇 خوب</button>
-                        <button class="g-btn g-acc" onclick="selectGrade(this, 'قابل قبول', 10, '${sub.username}')">🙂 قابل قبول</button>
-                        <button class="g-btn g-bad" onclick="selectGrade(this, 'نیاز به تلاش', 5, '${sub.username}')">⚠️ تلاش بیشتر</button>
-                    </div>
-                    
-                    <input type="text" id="txt_${sub.username}" placeholder="پیام متنی (اختیاری)..." value="${sub.feedback||''}" class="fb-input" style="width:95%">
-                    
-                    <div class="feedback-tools">
-                        <button id="rec_${sub.username}" class="rec-btn" onmousedown="startRec('${sub.username}')" onmouseup="stopRec('${sub.username}')" ontouchstart="startRec('${sub.username}')" ontouchend="stopRec('${sub.username}')">🎙️</button>
-                        <div style="flex:1; margin-left:10px;">
-                            <span id="recStatus_${sub.username}" style="font-size:0.8rem; color:#777; display:block;">نگه دارید برای ضبط</span>
-                            <span id="imgStatus_${sub.username}" style="font-size:0.7rem; color:#3498db; display:block;"></span>
-                        </div>
-                        <input type="file" id="img_${sub.username}" accept="image/*" style="display:none" onchange="imgSelected('${sub.username}')">
-                        <button onclick="document.getElementById('img_${sub.username}').click()" style="background:#3498db; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">📷 عکس</button>
-                    </div>
-                    
-                    <div style="margin-top:15px; display:flex; align-items:center; gap:5px; background:white; padding:10px; border-radius:8px;">
-                        <label style="font-size:0.8rem;">پاداش (XP):</label>
-                        <input type="number" id="xp_${sub.username}" value="0" style="width:50px; padding:5px; text-align:center; border:1px solid #ccc; border-radius:5px;">
-                        <button onclick="submitGrade('${sub.username}')" style="background:#27ae60; color:white; border:none; padding:8px 20px; border-radius:5px; cursor:pointer; margin-right:auto; width:100%;">💾 ثبت نهایی</button>
-                    </div>
-                </div>
-            `;
-            list.appendChild(div);
-        });
-
-        // --- 2. لیست غایبین (🆕 قابلیت جدید) ---
-        const missing = [];
-        ALL_USERS.forEach(u => {
-            if(!submittedUsernames.includes(u.u)) missing.push(u);
-        });
-
+        // لیست غایبین (همه کاربران منهای کسانی که ارسال کرده‌اند)
+        const missing = ALL_USERS.filter(u => !submittedUsers.includes(u.u));
         if(missing.length > 0) {
-            const missingDiv = document.createElement('div');
-            missingDiv.className = 'missing-list';
-            let html = `<h4 style="color:#c0392b; margin-bottom:10px;">❌ انجام نداده‌ها (${missing.length} نفر):</h4><div>`;
+            let html = "";
             missing.forEach(u => {
                 html += `<span class="missing-item">${u.n}</span>`;
             });
-            html += `</div>`;
-            missingDiv.innerHTML = html;
-            list.appendChild(missingDiv);
+            missingContainer.innerHTML += html;
+        } else {
+            missingContainer.innerHTML += '<span style="color:green; font-weight:bold;">همه انجام داده‌اند! 👏</span>';
         }
+    }
+
+    function createSubCard(username, name, sub) {
+        const fullUrl = sub.file.startsWith('http') ? sub.file : API_URL + sub.file;
+        let mediaHtml = sub.type === 'voice' ? `<audio controls src="${fullUrl}" style="width:100%; margin:10px 0;"></audio>` : `<a href="${fullUrl}" target="_blank"><img src="${fullUrl}" style="max-height:150px; border-radius:10px; display:block; margin:10px auto;"></a>`;
+        
+        const div = document.createElement('div');
+        div.className = `sub-card ${sub.status}`;
+        div.innerHTML = `
+            <div style="display:flex; justify-content:space-between;">
+                <strong>👤 ${name}</strong>
+                <span style="color:#777; font-size:0.8rem;">${sub.date}</span>
+            </div>
+            ${mediaHtml}
+            <div class="grade-panel">
+                <div class="grade-btns">
+                    <button class="g-btn g-vgood" onclick="selectGrade(this, 'خیلی خوب', 50, '${username}')">💎 خیلی خوب</button>
+                    <button class="g-btn g-good" onclick="selectGrade(this, 'خوب', 30, '${username}')">🥇 خوب</button>
+                    <button class="g-btn g-acc" onclick="selectGrade(this, 'قابل قبول', 10, '${username}')">🙂 قابل قبول</button>
+                    <button class="g-btn g-bad" onclick="selectGrade(this, 'نیاز به تلاش', 5, '${username}')">⚠️ تلاش بیشتر</button>
+                </div>
+                
+                <input type="text" id="txt_${username}" placeholder="پیام متنی (اختیاری)..." value="${sub.feedback||''}" class="fb-input" style="width:95%">
+                
+                <div class="feedback-tools">
+                    <button id="rec_${username}" class="rec-btn" onmousedown="startRec('${username}')" onmouseup="stopRec('${username}')" ontouchstart="startRec('${username}')" ontouchend="stopRec('${username}')">🎙️</button>
+                    <div style="flex:1; margin-left:10px;">
+                        <span id="recStatus_${username}" style="font-size:0.8rem; color:#777; display:block;">نگه دارید برای ضبط</span>
+                        <span id="imgStatus_${username}" style="font-size:0.7rem; color:#3498db; display:block;"></span>
+                    </div>
+                    <input type="file" id="img_${username}" accept="image/*" style="display:none" onchange="imgSelected('${username}')">
+                    <button onclick="document.getElementById('img_${username}').click()" style="background:#3498db; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">📷 عکس</button>
+                </div>
+                
+                <div style="margin-top:15px; display:flex; align-items:center; gap:5px; background:white; padding:10px; border-radius:8px;">
+                    <label style="font-size:0.8rem;">پاداش (XP):</label>
+                    <input type="number" id="xp_${username}" value="0" style="width:50px; padding:5px; text-align:center; border:1px solid #ccc; border-radius:5px;">
+                    <button onclick="submitGrade('${username}')" style="background:#27ae60; color:white; border:none; padding:8px 20px; border-radius:5px; cursor:pointer; margin-right:auto; width:100%;">💾 ثبت نهایی</button>
+                </div>
+            </div>
+        `;
+        return div;
     }
 
     function selectGrade(btn, gradeText, xpVal, username) {
@@ -534,7 +534,7 @@
         document.getElementById('loadingBox').style.display = 'none';
     }
 
-    // --- سایر توابع اصلی (بدون تغییر) ---
+    // --- توابع لیست کاربران و آمار (کامل) ---
     function renderUsersList(users) {
         const container = document.getElementById('usersList');
         container.innerHTML = '';
@@ -565,6 +565,7 @@
         document.getElementById('modalTitle').innerText = user.n;
         const d = user.parsedData;
         const body = document.getElementById('modalBody');
+        
         let examsHtml = '<table><tr><th>نام آزمون</th><th>وضعیت/غلط‌ها</th><th>عملیات</th></tr>';
         Object.keys(META_EXAMS).forEach(eid => {
             const info = META_EXAMS[eid]; const title = info.title || info; let statusHtml = '<span style="color:red; font-size:0.8rem;">❌ غایب</span>'; let opHtml = '-';
